@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+    <div id="ticket-template" class="ticket-container" style="font-family: Arial, sans-serif; width: 800px; margin: 0 auto; padding: 0; background-color: white; color: #1a1a2e;">
+      <div class="ticket" style="overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); background: white; margin: 0; padding: 0; border: 1px solid #ddd;">
+        <div class="ticket-header" style="background-color: #6c63ff; color: white; padding: 20px; display: table; width: calc(100% - 40px); table-layout: fixed;">
+          <div style="display: table-cell; vertical-align: middle; width: 70%;">
+            <div class="logo" style="font-size: 24px; font-weight: bold;">
+              <span style="font-size: 28px; margin-right: 10px;">✈️</span>
+              <span>DjangoAIR</span>
+            </div>
+          </div>
+          <div style="display: table-cell; vertical-align: middle; text-align: right; width: 30%;">
+            <div class="ticket-type" style="background-color: rgba(255, 255, 255, 0.2); padding: 5px 15px; border-radius: 20px; font-weight: bold; display: inline-block; max-width: 100%; box-sizing: border-box;">
+              <span>Boarding Pass</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ticket-body" style="padding: 30px;">
+          <div class="flight-info" style="margin-bottom: 30px;">
+            <!-- City codes section using table layout -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 20px;">
+              <tr>
+                <td width="30%" style="text-align: center; vertical-align: middle;">
+                  <div class="city-code" style="font-size: 36px; font-weight: bold; color: #1a1a2e;">{{ ticket.flight.origin_code }}</div>
+                  <div class="city-name" style="font-size: 16px; color: #666;">{{ ticket.flight.origin }}</div>
+                </td>
+                <td width="40%" style="text-align: center; vertical-align: middle; position: relative;">
+                  <div style="height: 40px; position: relative;">
+                    <!-- Horizontal line -->
+                    <div style="position: absolute; top: 50%; left: 0; right: 0; height: 2px; background-color: #ddd;"></div>
+                  </div>
+                </td>
+                <td width="30%" style="text-align: center; vertical-align: middle;">
+                  <div class="city-code" style="font-size: 36px; font-weight: bold; color: #1a1a2e;">{{ ticket.flight.destination_code }}</div>
+                  <div class="city-name" style="font-size: 16px; color: #666;">{{ ticket.flight.destination }}</div>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Flight details section using table layout -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f0f0f0; border-radius: 8px;">
+              <tr>
+                <td style="padding: 15px; text-align: center; width: 25%;">
+                  <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Flight</div>
+                  <div style="font-size: 16px; font-weight: bold; color: #1a1a2e;">{{ ticket.flight.flight_number }}</div>
+                </td>
+                <td style="padding: 15px; text-align: center; width: 25%;">
+                  <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Date</div>
+                  <div style="font-size: 16px; font-weight: bold; color: #1a1a2e;">{{ formatted_data.date }}</div>
+                </td>
+                <td style="padding: 15px; text-align: center; width: 25%;">
+                  <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Departure</div>
+                  <div style="font-size: 16px; font-weight: bold; color: #1a1a2e;">{{ formatted_data.departure_time }}</div>
+                </td>
+                <td style="padding: 15px; text-align: center; width: 25%;">
+                  <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Arrival</div>
+                  <div style="font-size: 16px; font-weight: bold; color: #1a1a2e;">{{ formatted_data.arrival_time }}</div>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Passenger info section using table layout -->
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f0f0f0; border-radius: 8px; margin-bottom: 30px;">
+            <tr>
+              <td style="padding: 15px; text-align: center; width: 33.33%;">
+                <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Passenger</div>
+                <div style="font-size: 16px; font-weight: bold; color: #1a1a2e;">{{ ticket.airlineuser.first_name }} {{ ticket.airlineuser.last_name }}</div>
+              </td>
+              <td style="padding: 15px; text-align: center; width: 33.33%;">
+                <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Passenger ID</div>
+                <div style="font-size: 16px; font-weight: bold; color: #1a1a2e;">{{ ticket.passenger_id }}</div>
+              </td>
+              <td style="padding: 15px; text-align: center; width: 33.33%;">
+                <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Seat</div>
+                <div style="font-size: 16px; font-weight: bold; color: #1a1a2e;">{{ ticket.seat_number }}</div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 15px; text-align: center; width: 33.33%;">
+                <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Class</div>
+                <div style="font-size: 16px; font-weight: bold; color: #1a1a2e;">{{ ticket.seat_class }}</div>
+              </td>
+              <td style="padding: 15px; text-align: center; width: 33.33%;">
+                <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Gate</div>
+                <div style="font-size: 16px; font-weight: bold; color: #1a1a2e;">{{ ticket.gate }}</div>
+              </td>
+              <td style="padding: 15px; text-align: center; width: 33.33%;">
+                <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Boarding</div>
+                <div style="font-size: 16px; font-weight: bold; color: #1a1a2e;">{{ formatted_data.boarding_time }}</div>
+              </td>
+            </tr>
+          </table>
+
+          <div style="text-align: center; margin-top: 20px;">
+            <div style="font-size: 14px; font-weight: bold;">
+              Booking Ref: {{ ticket.booking_reference }}
+            </div>
+          </div>
+        </div>
+
+        <div style="background-color: #f0f0f0; padding: 15px; text-align: center; font-size: 14px; color: #666; border-top: 1px dashed #ddd;">
+          <p style="margin: 5px 0;">Thank you for choosing DjangoAIR. We wish you a pleasant flight!</p>
+          <p style="font-size: 12px; margin-top: 5px; margin-bottom: 5px;">This is an electronic ticket. Please present this document along with a photo ID at the check-in counter.</p>
+        </div>
+      </div>
+    </div>
+</body>
+</html>

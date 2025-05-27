@@ -1,0 +1,1544 @@
+/* Base styles */
+.booking-app {
+  --color-primary: #6c63ff;
+  --color-secondary: #ff6584;
+  --color-tertiary: #43cbff;
+  --color-success: #00c9a7;
+  --color-dark: #1a1a2e;
+  --color-light: #f8f9fa;
+
+  color: var(--color-light);
+  font-family: 'Poppins', sans-serif;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Main background that spans all sections */
+.main-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Stars background */
+.stars-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.stars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(2px 2px at calc(random(100) * 1vw) calc(random(100) * 1vh), white, rgba(0,0,0,0)),
+                    radial-gradient(2px 2px at calc(random(100) * 1vw) calc(random(100) * 1vh), white, rgba(0,0,0,0)),
+                    radial-gradient(2px 2px at calc(random(100) * 1vw) calc(random(100) * 1vh), white, rgba(0,0,0,0));
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+.stars-1 {
+  opacity: 0.3;
+}
+
+.stars-2 {
+  opacity: 0.2;
+  transform: rotate(30deg);
+}
+
+.stars-3 {
+  opacity: 0.1;
+  transform: rotate(60deg);
+}
+
+/* Animated shapes for background */
+.animated-shapes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.shape {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.2;
+  filter: blur(40px);
+}
+
+.shape-1 {
+  width: 300px;
+  height: 300px;
+  background: var(--color-primary);
+  top: 10%;
+  left: 5%;
+  animation: float 20s infinite alternate ease-in-out;
+}
+
+.shape-2 {
+  width: 200px;
+  height: 200px;
+  background: var(--color-secondary);
+  bottom: 10%;
+  right: 5%;
+  animation: float 15s infinite alternate-reverse ease-in-out;
+}
+
+.shape-3 {
+  width: 150px;
+  height: 150px;
+  background: var(--color-tertiary);
+  top: 30%;
+  right: 10%;
+  animation: float 18s infinite alternate ease-in-out;
+}
+
+.shape-4 {
+  width: 250px;
+  height: 250px;
+  background: var(--color-primary);
+  bottom: 20%;
+  left: 10%;
+  animation: float 22s infinite alternate-reverse ease-in-out;
+}
+
+.shape-5 {
+  width: 180px;
+  height: 180px;
+  background: var(--color-tertiary);
+  top: 45%;
+  left: 45%;
+  animation: float 25s infinite alternate ease-in-out;
+}
+
+/* Section transitions */
+.section-transition {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 150px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.section-transition svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Airplane path animation */
+.airplane-path {
+  position: absolute;
+  top: 40%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  z-index: 1;
+}
+
+.path-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.3) 20%,
+    rgba(255,255,255,0.5) 40%,
+    rgba(255,255,255,0.3) 60%,
+    rgba(255,255,255,0) 100%);
+}
+
+.airplane-icon {
+  position: absolute;
+  top: -22px;
+  left: -48px;
+  color: var(--color-primary);
+  animation: fly 15s linear infinite;
+  filter: drop-shadow(0 0 8px rgba(108, 99, 255, 0.6));
+  z-index: 2;
+}
+
+/* Glass card effect */
+.glass-card {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Intro content */
+.intro-content {
+  padding: 3rem;
+  border-radius: 24px;
+}
+
+.logo-circle {
+  width: 100px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  box-shadow: 0 0 30px rgba(108, 99, 255, 0.5);
+  animation: pulse 3s infinite;
+}
+
+/* Text gradient */
+.text-gradient {
+  background: linear-gradient(90deg, var(--color-primary), var(--color-tertiary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-fill-color: transparent;
+}
+
+.text-gradient-alt {
+  background: linear-gradient(90deg, var(--color-tertiary), var(--color-primary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-fill-color: transparent;
+}
+
+/* Glow effects */
+.text-glow {
+  color: var(--color-primary);
+  text-shadow: 0 0 10px rgba(108, 99, 255, 0.5);
+}
+
+.btn-glow {
+  background: linear-gradient(45deg, var(--color-primary), var(--color-tertiary));
+  border: none;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(108, 99, 255, 0.4);
+}
+
+.btn-glow:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(108, 99, 255, 0.6);
+}
+
+.btn-glow:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.2) 50%,
+    rgba(255,255,255,0) 100%);
+  transition: all 0.6s;
+}
+
+.btn-glow:hover:before {
+  left: 100%;
+}
+
+/* Input group styling */
+.input-group-glow {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.input-group-glow:focus-within {
+  box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.5);
+  border-color: var(--color-primary);
+}
+
+.input-group-glow .form-control,
+.input-group-glow .input-group-text,
+.input-group-glow .btn {
+  background: transparent;
+  border: none;
+  color: var(--color-light);
+}
+
+.input-group-glow .form-control::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.form-control, .form-select {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-light);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.5);
+  border-color: var(--color-primary);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.form-control::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Fix for select option text color */
+.form-select option {
+  background-color: var(--color-dark);
+  color: var(--color-light);
+}
+
+/* Summary cards */
+.summary-card {
+  background: linear-gradient(135deg, #2b2b4b, #1a1a2e);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.summary-mini-card {
+  background: linear-gradient(135deg, #2b2b4b, #1a1a2e);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Airplane seat map */
+.airplane-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.airplane-cockpit {
+  width: 100px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50% 50% 0 0;
+  box-shadow: inset 0 -2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.airplane-seats {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.seat-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.row-number {
+  width: 20px;
+  text-align: center;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.seats-group {
+  display: flex;
+  gap: 6px;
+}
+
+.aisle {
+  width: 20px;
+}
+
+.seat {
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.seat.available {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.seat.available:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.seat.selected {
+  background: var(--color-primary);
+  color: white;
+  border: 1px solid var(--color-primary);
+  box-shadow: 0 0 10px rgba(108, 99, 255, 0.5);
+}
+
+.seat.occupied {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.3);
+  cursor: not-allowed;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.seat-legend {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.seat-sample {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+}
+
+.seat-sample.available {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.seat-sample.selected {
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  box-shadow: 0 0 10px rgba(108, 99, 255, 0.5);
+}
+
+.seat-sample.occupied {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Success animation */
+.success-animation {
+  display: inline-block;
+}
+
+.checkmark-circle {
+  width: 80px;
+  height: 80px;
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+  background: rgba(0, 201, 167, 0.1);
+  border-radius: 50%;
+}
+
+.checkmark {
+  border-radius: 5px;
+}
+
+.checkmark.draw:after {
+  content: '';
+  display: block;
+  width: 14px;
+  height: 28px;
+  border: solid var(--color-success);
+  border-width: 0 4px 4px 0;
+  position: absolute;
+  left: 34px;
+  top: 22px;
+  transform: rotate(45deg);
+  animation: checkmark 0.8s ease forwards;
+  opacity: 0;
+}
+
+@keyframes checkmark {
+  0% {
+    height: 0;
+    width: 0;
+    opacity: 0;
+  }
+  40% {
+    height: 0;
+    width: 14px;
+    opacity: 1;
+  }
+  100% {
+    height: 28px;
+    width: 14px;
+    opacity: 1;
+  }
+}
+
+/* Animations */
+@keyframes float {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(30px, 30px);
+  }
+}
+
+@keyframes fly {
+  0% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(calc(100vw + 48px));
+    opacity: 0;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(108, 99, 255, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(108, 99, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(108, 99, 255, 0);
+  }
+}
+
+/* Z-index utility */
+.z-index-2 {
+  z-index: 2;
+}
+
+/* Section transitions */
+section {
+  transition: opacity 0.5s ease;
+  position: relative;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+  .intro-content {
+    padding: 2rem;
+  }
+
+  .logo-circle {
+    width: 80px;
+    height: 80px;
+  }
+
+  .section-transition {
+    height: 100px;
+  }
+}
+
+/* Airplane Map Container */
+.airplane-map-container {
+  max-width: 700px;
+  margin: 0 auto;
+  position: relative;
+  padding: 20px;
+  perspective: 1000px;
+}
+
+/* Airplane Body */
+.airplane-body {
+  position: relative;
+  width: 100%;
+  background: rgba(26, 26, 46, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border-radius: 50% 50% 20% 20% / 60% 60% 40% 40%;
+  padding: 20px 0;
+  overflow: visible;
+  transform-style: preserve-3d;
+  transform: rotateX(5deg);
+}
+
+/* Cockpit */
+.cockpit {
+  width: 120px;
+  height: 80px;
+  background: linear-gradient(to bottom, rgba(67, 203, 255, 0.2), rgba(26, 26, 46, 0.3));
+  border-radius: 60px 60px 0 0;
+  margin: -20px auto 20px;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 5px 15px rgba(67, 203, 255, 0.1);
+}
+
+.cockpit:before {
+  content: "";
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 30px;
+  background: rgba(67, 203, 255, 0.1);
+  border-radius: 40px 40px 0 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+}
+
+.cockpit-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.cockpit-icon {
+  color: var(--color-primary);
+  margin-bottom: 5px;
+  filter: drop-shadow(0 0 5px rgba(108, 99, 255, 0.5));
+}
+
+.cockpit-text {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Wings */
+.left-wing,
+.right-wing {
+  position: absolute;
+  background: linear-gradient(to bottom, rgba(26, 26, 46, 0.4), rgba(26, 26, 46, 0.2));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: -1;
+}
+
+.left-wing {
+  top: 40%;
+  left: -120px;
+  width: 140px;
+  height: 180px;
+  transform: skewY(-30deg);
+  border-radius: 60% 0 0 20% / 70% 0 0 30%;
+  box-shadow: inset 5px -5px 20px rgba(0, 0, 0, 0.2);
+}
+
+.right-wing {
+  top: 40%;
+  right: -120px;
+  width: 140px;
+  height: 180px;
+  transform: skewY(30deg);
+  border-radius: 0 60% 20% 0 / 0 70% 30% 0;
+  box-shadow: inset -5px -5px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Engines */
+.engine {
+  position: absolute;
+  width: 40px;
+  height: 60px;
+  background: linear-gradient(to bottom, rgba(26, 26, 46, 0.6), rgba(26, 26, 46, 0.4));
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50% 50% 30% 30% / 50% 50% 50% 50%;
+  z-index: -2;
+}
+
+.left-engine {
+  top: 45%;
+  left: -60px;
+}
+
+.right-engine {
+  top: 45%;
+  right: -60px;
+}
+
+.engine:before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+/* Cabin */
+.cabin {
+  padding: 0 20px;
+}
+
+/* Cabin Sections */
+.cabin-section {
+  position: relative;
+  margin-bottom: 20px;
+  padding: 15px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.cabin-section:last-child {
+  border-bottom: none;
+}
+
+.section-label {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-dark);
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary);
+  border: 1px solid rgba(108, 99, 255, 0.3);
+  z-index: 1;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* First Class */
+.first-class {
+  padding-top: 20px;
+  width: 80%;
+  margin: 0 auto;
+}
+
+.first-class-seat {
+  width: 45px;
+  height: 45px;
+  background: linear-gradient(to bottom, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.first-class-seat.available:hover {
+  background: linear-gradient(to bottom, rgba(255, 215, 0, 0.3), rgba(255, 215, 0, 0.2));
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.first-class-aisle {
+  width: 60px;
+}
+
+/* Business Class */
+.business-class {
+  padding-top: 20px;
+  width: 90%;
+  margin: 0 auto;
+}
+
+.business-seat {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(to bottom, rgba(108, 99, 255, 0.2), rgba(108, 99, 255, 0.1));
+  border: 1px solid rgba(108, 99, 255, 0.3);
+}
+
+.business-seat.available:hover {
+  background: linear-gradient(to bottom, rgba(108, 99, 255, 0.3), rgba(108, 99, 255, 0.2));
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.business-aisle {
+  width: 40px;
+}
+
+/* Economy Class */
+.economy-class {
+  padding-top: 20px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.economy-seat {
+  width: 35px;
+  height: 35px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.economy-seat.available:hover {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15));
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.economy-aisle {
+  width: 30px;
+}
+
+/* Emergency Exit Row */
+.emergency-exit-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  position: relative;
+}
+
+.exit {
+  width: 30px;
+  height: 15px;
+  background: linear-gradient(to bottom, rgba(255, 101, 132, 0.3), rgba(255, 101, 132, 0.2));
+  border: 1px solid rgba(255, 101, 132, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.exit-left {
+  left: -30px;
+  position: absolute;
+}
+
+.exit-right {
+  right: -30px;
+  position: absolute;
+}
+
+.exit-label {
+  font-size: 8px;
+  font-weight: 700;
+  color: rgba(255, 101, 132, 0.8);
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Rear Section */
+.rear-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  position: relative;
+}
+
+.lavatories {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 20px;
+}
+
+.lavatory,
+.galley {
+  width: 30px;
+  height: 30px;
+  background: linear-gradient(to bottom, rgba(67, 203, 255, 0.2), rgba(67, 203, 255, 0.1));
+  border: 1px solid rgba(67, 203, 255, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(67, 203, 255, 0.8);
+  cursor: help;
+}
+
+.galley {
+  background: linear-gradient(to bottom, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  color: rgba(255, 215, 0, 0.8);
+}
+
+/* Tail */
+.tail {
+  width: 80px;
+  height: 60px;
+  background: linear-gradient(to bottom, rgba(26, 26, 46, 0.4), rgba(26, 26, 46, 0.2));
+  border-radius: 0 0 50% 50% / 0 0 100% 100%;
+  margin: 0 auto;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: none;
+}
+
+.vertical-stabilizer {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 60px;
+  background: linear-gradient(to top, rgba(108, 99, 255, 0.2), rgba(108, 99, 255, 0.1));
+  border-radius: 0 0 50% 50% / 0 0 20% 20%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Seat Rows */
+.seat-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.seat-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.row-number {
+  width: 20px;
+  text-align: center;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+}
+
+.seats-group {
+  display: flex;
+  gap: 6px;
+}
+
+.aisle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Seat Styling */
+.seat {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  position: relative;
+  overflow: hidden;
+}
+
+.seat:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 30%;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px 8px 0 0;
+}
+
+.seat.selected {
+  background: linear-gradient(to bottom, var(--color-primary), rgba(108, 99, 255, 0.7));
+  color: white;
+  border: 1px solid var(--color-primary);
+  box-shadow: 0 0 15px rgba(108, 99, 255, 0.5);
+  transform: translateY(-3px) scale(1.05);
+  z-index: 1;
+}
+
+.seat.selected:after {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.seat.occupied {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  color: rgba(255, 255, 255, 0.3);
+  cursor: not-allowed;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+}
+
+.seat.occupied:after {
+  opacity: 0.3;
+}
+
+/* Legend */
+.seat-legend {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 30px;
+  padding: 15px;
+  background: rgba(26, 26, 46, 0.3);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.seat-sample {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  position: relative;
+}
+
+.seat-sample:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 30%;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px 4px 0 0;
+}
+
+.first-class-sample {
+  background: linear-gradient(to bottom, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.business-sample {
+  background: linear-gradient(to bottom, rgba(108, 99, 255, 0.2), rgba(108, 99, 255, 0.1));
+  border: 1px solid rgba(108, 99, 255, 0.3);
+}
+
+.economy-sample {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.seat-sample.selected {
+  background: linear-gradient(to bottom, var(--color-primary), rgba(108, 99, 255, 0.7));
+  border: 1px solid var(--color-primary);
+  box-shadow: 0 0 10px rgba(108, 99, 255, 0.5);
+}
+
+.seat-sample.occupied {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.legend-item span {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Animations */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(108, 99, 255, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(108, 99, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(108, 99, 255, 0);
+  }
+}
+
+.seat.selected {
+  animation: pulse 2s infinite;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 767.98px) {
+  .airplane-body {
+    padding: 10px 0;
+    transform: rotateX(0);
+  }
+
+  .left-wing,
+  .right-wing {
+    display: none;
+  }
+
+  .engine {
+    display: none;
+  }
+
+  .cockpit {
+    width: 80px;
+    height: 50px;
+    margin-bottom: 15px;
+  }
+
+  .cockpit:before {
+    width: 60px;
+    height: 20px;
+    top: -10px;
+  }
+
+  .first-class-seat {
+    width: 35px;
+    height: 35px;
+  }
+
+  .business-seat {
+    width: 30px;
+    height: 30px;
+  }
+
+  .economy-seat {
+    width: 25px;
+    height: 25px;
+  }
+
+  .first-class-aisle {
+    width: 40px;
+  }
+
+  .business-aisle {
+    width: 30px;
+  }
+
+  .economy-aisle {
+    width: 20px;
+  }
+
+  .seat {
+    font-size: 10px;
+  }
+
+  .section-label {
+    font-size: 10px;
+  }
+
+  .exit {
+    width: 20px;
+    height: 10px;
+  }
+
+  .exit-label {
+    font-size: 6px;
+  }
+
+  .seat-legend {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+/* Hover Effects */
+.seat.available {
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.seat.available:hover {
+  transform: translateY(-3px) scale(1.1);
+  z-index: 2;
+}
+
+/* Focus Effects for Accessibility */
+.seat:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Tooltip for seats */
+.seat:before {
+  content: attr(data-seat);
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%) scale(0);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  opacity: 0;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.seat:hover:before {
+  transform: translateX(-50%) scale(1);
+  opacity: 1;
+}
+
+/* 3D effect for the entire airplane */
+.airplane-map-container:hover .airplane-body {
+  transform: rotateX(8deg) rotateY(2deg);
+  transition: transform 0.5s ease;
+}
+
+/* Додаємо стилі для кнопки профілю та випадаючого меню */
+.user-profile-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.user-profile-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-tertiary));
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.user-profile-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.user-avatar {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  width: 220px;
+  background: rgba(26, 26, 46, 0.95);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: fadeIn 0.3s ease;
+}
+
+.profile-header {
+  padding: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profile-name {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  color: white;
+  margin-bottom: 5px;
+}
+
+.profile-email {
+  display: block;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.profile-menu-items {
+  padding: 10px 0;
+}
+
+.profile-menu-item {
+  display: block;
+  padding: 10px 15px;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.profile-menu-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.logout-button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: #ff6584;
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  background: rgba(255, 101, 132, 0.1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Стилі для повідомлення про необхідність авторизації */
+.auth-required-message {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.auth-required-content {
+  width: 90%;
+  max-width: 400px;
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.95), rgba(20, 20, 35, 0.95));
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: slideUp 0.4s ease;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 24px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.close-button:hover {
+  color: white;
+}
+
+.auth-required-content h3 {
+  color: white;
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.auth-required-content p {
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 25px;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.btn-login, .btn-register {
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-login {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.btn-login:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-register {
+  background: linear-gradient(45deg, var(--color-primary), var(--color-tertiary));
+  border: none;
+  color: white;
+}
+
+.btn-register:hover {
+  box-shadow: 0 0 15px rgba(108, 99, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Стилі для різних класів місць */
+.section-label {
+  display: inline-block;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.first-class-label {
+  background: rgba(255, 215, 0, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  color: rgba(255, 215, 0, 0.9);
+}
+
+.business-class-label {
+  background: rgba(108, 99, 255, 0.2);
+  border: 1px solid rgba(108, 99, 255, 0.3);
+  color: rgba(108, 99, 255, 0.9);
+}
+
+.economy-label {
+  background: rgba(160, 160, 160, 0.2);
+  border: 1px solid rgba(160, 160, 160, 0.3);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.cabin-section {
+  position: relative;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+/* Стилі для місць різних класів */
+.first-class-seat {
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  width: 45px;
+  height: 45px;
+}
+
+.first-class-seat.available:hover {
+  background: rgba(255, 215, 0, 0.25);
+}
+
+.business-seat {
+  background: rgba(108, 99, 255, 0.15);
+  border: 1px solid rgba(108, 99, 255, 0.3);
+  width: 40px;
+  height: 40px;
+}
+
+.business-seat.available:hover {
+  background: rgba(108, 99, 255, 0.25);
+}
+
+.economy-seat {
+  background: rgba(160, 160, 160, 0.15);
+  border: 1px solid rgba(160, 160, 160, 0.3);
+}
+
+.economy-seat.available:hover {
+  background: rgba(160, 160, 160, 0.25);
+}
+
+/* Зразки місць для легенди */
+.first-class-sample {
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.business-sample {
+  background: rgba(108, 99, 255, 0.15);
+  border: 1px solid rgba(108, 99, 255, 0.3);
+}
+
+.economy-sample {
+  background: rgba(160, 160, 160, 0.15);
+  border: 1px solid rgba(160, 160, 160, 0.3);
+}
+
+/* Стилі для деталей місць у підсумку */
+.seat-detail-item {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.seat-class-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.seat-class-dot.first {
+  background-color: rgba(255, 215, 0, 0.8);
+}
+
+.seat-class-dot.business {
+  background-color: rgba(108, 99, 255, 0.8);
+}
+
+.seat-class-dot.economy {
+  background-color: rgba(160, 160, 160, 0.8);
+}
+
+.profile-menu-item.active {
+  background: rgba(108, 99, 255, 0.2);
+  color: var(--color-primary);
+}
+
+.pagination .page-item.active .page-link {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+/* Оновлені стилі для переходів між секціями */
+.section-transition {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 150px;
+  z-index: 10;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Нижній перехід (внизу секції) */
+.bottom-transition {
+  bottom: 0;
+}
+
+/* Верхній перехід (зверху секції) */
+.top-transition {
+  top: 0;
+}
+
+/* Стилі для SVG */
+.section-transition svg {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.5s ease;
+}
+
+/* Ефект при наведенні (опціонально) */
+.section-transition:hover svg {
+  transform: scale(1.02);
+}
+
+/* Додаткові стилі для контенту секцій */
+section .container {
+  position: relative;
+  z-index: 5;
+  padding-top: 80px; /* Додатковий відступ зверху для секцій з верхнім переходом */
+  padding-bottom: 80px; /* Додатковий відступ знизу для секцій з нижнім переходом */
+}
+
+/* Забезпечення правильного відображення при зміні секцій */
+section {
+  transition: opacity 0.5s ease;
+}
+
+.section3-transition {
+  transform: translateY(-50px);
+}

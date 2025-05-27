@@ -1,0 +1,25 @@
+{% extends 'master.html' %}
+
+{% block title %}DjangoAIR{% endblock %}
+{% load socialaccount %}
+
+{% block head %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static "main.css" %}">
+{% endblock %}
+
+{% block body %}
+    <div id="app"></div>
+
+    <script src="{% static 'main.bundle.js' %}"></script>
+
+    <script>
+        window.UNIQUE_CITIES_FROM_SERVER = {{ unique_cities|safe }};
+        window.FLIGHT_DATES_FROM_SERVER = {{ flight_dates|safe }};
+        window.oauthUrls = {
+            google: "{% provider_login_url 'google' %}",
+        };
+        window.csrfToken = '{{ csrf_token }}';
+    </script>
+
+{% endblock %}
