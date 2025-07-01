@@ -1,0 +1,78 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: DjangoAir
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecretpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  stripe-listen:
+    image: stripe/stripe-cli
+    command: listen --forward-to http://web:8000/api/succeed_payment/
+    depends_on:
+      - web
+    environment:
+      - STRIPE_API_KEY=sk_test_51RKHskQMzydK9SUpQXdCjoxpN6Dsq0acLCIdBqWECXIS6GRTKABCbevjZdHdAmPTT0JzuDiU89Zy52BxxJaOyPy300L1bau57i
+
+  web:
+    build: .
+    command: sh -c "npm install && npm run build && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - DjangoAir/.env
+    environment:
+      POSTGRES_HOST: db
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+
+  worker:
+    build: .
+    command: celery -A air worker --loglevel=info --pool=solo
+    volumes:
+      - .:/app
+    env_file:
+      - DjangoAir/.env
+    environment:
+      POSTGRES_HOST: db
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    depends_on:
+      - web
+      - redis
+
+  beat:
+    build: .
+    command: celery -A air beat --loglevel=info
+    volumes:
+      - .:/app
+    env_file:
+      - DjangoAir/.env
+    environment:
+      POSTGRES_HOST: db
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    depends_on:
+      - web
+      - redis
+
+volumes:
+  postgres_data:

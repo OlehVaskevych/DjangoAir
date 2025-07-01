@@ -20,6 +20,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
+    <option name="requirementsPath" value="D:\FoxMinded\DjangoAir\requirements.txt" />
     <option name="keepMatchingSpecifier" value="false" />
   </component>
   <component name="TemplatesService">

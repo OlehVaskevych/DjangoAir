@@ -55,6 +55,12 @@ INSTALLED_APPS = [
 	'allauth.account',
 	'allauth.socialaccount',
 	'allauth.socialaccount.providers.google',
+
+    "rest_framework",
+    "api",
+    "drf_spectacular",
+
+    "rest_framework_simplejwt"
 ]
 
 MIDDLEWARE = [
@@ -125,6 +131,13 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
 
 
 # Internationalization

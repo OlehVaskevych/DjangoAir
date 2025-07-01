@@ -55,11 +55,18 @@ def populate():
         )
         flights.append(flight)
 
+    dietary_options = [
+        DietaryOption.objects.create(name="Low Calorie"),
+        DietaryOption.objects.create(name="Vegetarian Option"),
+        DietaryOption.objects.create(name="Dairy-Free Option"),
+        DietaryOption.objects.create(name="Gluten-Free Option")
+    ]
+
     meals = [Meal.objects.create(
         name='Vegetarian sandwich',
         description='Whole-grain baguette with bean lard, lettuce, pickle and parsley.',
         price=10,
-        image_url='https://www.lot.com/content/dam/lot/marketing/sesja-zdjeciowa-posilkow-2023/posilki-prepaid/kanapka-wegetarianska-smalec.coreimg.82.760.jpg/1696333322547/kanapka-wegetarianska-smalec.jpg',
+        image_url='https://www.lot.com/content/dam/lot/marketing/sesja-zdjeciowa-posilkow-2023/posilki-prepaid/kanapka-wegetarianska-smalec.coreimg.82.760.jpg/1750838982457/kanapka-wegetarianska-smalec.jpg',
         stripe_price_id='price_1RP10YQMzydK9SUpLHKLiyJA'
     ), Meal.objects.create(
         name='Chicken salad',
@@ -81,29 +88,33 @@ def populate():
         stripe_price_id='price_1RP4h0QMzydK9SUpTkxR9mYz',
     )]
 
+    meals[0].dietary_options.add(dietary_options[0], dietary_options[1])
+    meals[1].dietary_options.add(dietary_options[2], dietary_options[3])
+    meals[3].dietary_options.add(dietary_options[0])
+
     baggage_options = [
         Baggage.objects.create(
-            name='',
-            description='',
-            price=10,
+            name='Extra Carry-on',
+            description='Additional cabin baggage up to 10kg',
+            price=30,
             weight=10,
             stripe_price_id='',
         ),Baggage.objects.create(
-            name='',
-            description='',
-            price=10,
-            weight=10,
+            name='Additional Checked Bag',
+            description='Extra checked luggage up to 23kg',
+            price=50,
+            weight=23,
             stripe_price_id='',
         ),Baggage.objects.create(
-            name='',
-            description='',
-            price=10,
-            weight=10,
+            name='Sports Equipment',
+            description='Special handling for sports gear',
+            price=40,
+            weight=30,
             stripe_price_id='',
         ),Baggage.objects.create(
-            name='',
-            description='',
-            price=10,
+            name='Overweight Allowance',
+            description='Increase weight limit for checked baggage',
+            price=40,
             weight=10,
             stripe_price_id='',
         )
@@ -111,24 +122,24 @@ def populate():
 
     comforts = [
         Comfort.objects.create(
-            name='',
-            description='',
-            price=10,
+            name='Priority Boarding',
+            description='Be among the first to board the aircraft',
+            price=15,
+            stripe_price_id='price_1RP123QMzydK9SUpOHgHFvPz',
+        ),Comfort.objects.create(
+            name='Lounge Access',
+            description='Enjoy exclusive airport lounge facilities',
+            price=45,
             stripe_price_id='',
         ),Comfort.objects.create(
-            name='',
-            description='',
-            price=10,
+            name='In-flight Wi-Fi',
+            description='Stay connected throughout your journey',
+            price=12,
             stripe_price_id='',
         ),Comfort.objects.create(
-            name='',
-            description='',
-            price=10,
-            stripe_price_id='',
-        ),Comfort.objects.create(
-            name='',
-            description='',
-            price=10,
+            name='Travel Kit',
+            description='Comfort kit with pillow, blanket and toiletries',
+            price=20,
             stripe_price_id='',
         )
     ]

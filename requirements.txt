@@ -1,3 +1,15 @@
 Django~=5.2
 stripe~=12.1.0
 python-dateutil~=2.9.0.post0
+celery~=5.5.2
+djangorestframework~=3.16.0
+Faker~=37.3.0
+drf-spectacular~=0.28.0
+django-environ
+djangorestframework-simplejwt
+django-celery-beat
+redis
+django-admin-interface
+django-allauth
+psycopg2-binary
+cryptography
