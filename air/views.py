@@ -19,7 +19,7 @@ from django.template.loader import render_to_string
 from django.utils.timezone import localdate
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
-from DjangoAir import settings
+from django.conf import settings
 
 from .forms import LoginForm, RegisterForm
 from .models import (AirlineUser, Baggage, BoardingPass, Comfort, Flight, Meal,

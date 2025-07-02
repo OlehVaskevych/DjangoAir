@@ -38,7 +38,7 @@ services:
       - db
       - redis
     env_file:
-      - DjangoAir/.env
+      - DjangoAir/settings/.env
     environment:
       POSTGRES_HOST: db
       CELERY_BROKER_URL: redis://redis:6379/0
@@ -50,7 +50,7 @@ services:
     volumes:
       - .:/app
     env_file:
-      - DjangoAir/.env
+      - DjangoAir/settings/.env
     environment:
       POSTGRES_HOST: db
       CELERY_BROKER_URL: redis://redis:6379/0
@@ -65,7 +65,7 @@ services:
     volumes:
       - .:/app
     env_file:
-      - DjangoAir/.env
+      - DjangoAir/settings/.env
     environment:
       POSTGRES_HOST: db
       CELERY_BROKER_URL: redis://redis:6379/0
