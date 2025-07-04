@@ -19,13 +19,15 @@ from django.template.loader import render_to_string
 from django.utils.timezone import localdate
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
-from django.conf import settings
-
 from .forms import LoginForm, RegisterForm
 from .models import (AirlineUser, Baggage, BoardingPass, Comfort, Flight, Meal,
                      Ticket, TicketStatusChoices)
 
-stripe.api_key = settings.STRIPE_SECRET_KEY
+from django.conf import settings
+
+stripe.api_key = settings.STRIPE_API_KEY
+
+print(stripe.api_key)
 
 # Generates a booking reference like 'A1B2C3D4E5'
 def generate_booking_reference():
@@ -162,7 +164,7 @@ def index(request):
         'unique_cities': sorted(cities),
     })
 
-
+@login_required(login_url='/')
 def bookings(request):
     if request.user.is_authenticated:
         return render(request, 'bookings.html')

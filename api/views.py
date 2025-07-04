@@ -12,6 +12,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework import status, viewsets
+from rest_framework.authentication import TokenAuthentication, BasicAuthentication
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -61,6 +62,7 @@ class CurrentUserAPIView(APIView):
     - JsonResponse with the user`s information if authenticated.
     - JsonResponse with 'isAuthenticated': False if the user is not authenticated.
     """
+    authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -94,6 +96,7 @@ class UserTicketsAPIView(APIView):
     Returns:
         JsonResponse: A list of ticket data in JSON format.
     """
+    authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -196,7 +199,6 @@ class AdditionalServicesAPIView(APIView):
             "comfort": comfort_data,
         }
 
-        print(services_data)
         return Response(services_data)
 
 class CancelTicketAPIView(APIView):
@@ -214,6 +216,7 @@ class CancelTicketAPIView(APIView):
         - 400 for invalid JSON or missing ticket_id.
         - 405 if the method is not POST.
     """
+    authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -223,7 +226,7 @@ class CancelTicketAPIView(APIView):
             ticket_id = data.get('ticket_id')
 
             if not ticket_id:
-                return JsonResponse({'success': False, 'error': 'Missing ticket_id.'}, status=400)
+                return Response({'success': False, 'error': 'Missing ticket_id.'}, status=400)
 
             ticket = Ticket.objects.get(id=ticket_id)
             ticket.status = TicketStatusChoices.CANCELED

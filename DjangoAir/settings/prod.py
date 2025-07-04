@@ -4,7 +4,7 @@ DEBUG = env.bool('DEBUG', default=False)
 
 SECRET_KEY = env('DJANGO_SECRET_KEY')
 
-ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS').split(',')
+ALLOWED_HOSTS = env('ALLOWED_HOSTS').split(',')
 
 DATABASES = {
     "default": {
@@ -41,7 +41,7 @@ LOGGING = {
         "file": {
             "level": "INFO",
             "class": "logging.FileHandler",
-            "filename": BASE_DIR / "logs" / "django.log",
+            "filename": BASE_DIR / "django.log",
             "formatter": "verbose",
         },
     },
@@ -50,8 +50,6 @@ LOGGING = {
         "level": "INFO",
     },
 }
-
-STRIPE_API_KEY = env('STRIPE_SECRET_KEY')
 
 SECURE_SSL_REDIRECT = True
 
