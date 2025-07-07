@@ -1,49 +1,56 @@
 # ✈️ DjangoAir
 
-**DjangoAir** is a web service for buying airline tickets and managing the airport system. The project simulates the real work of an airport, dividing users into four main roles:
+**DjangoAir** is a full-featured web service for purchasing airline tickets and managing airport operations. It simulates the real workflow of an airport, with four key user roles:
 
-- 🧾 Passenger - can view flights and buy tickets online. Download his tickets or cancel.
-- 🧾 Check-in manager - checks tickets and registers passengers.
-- 🛂 Gate manager - manages passenger boarding.
-- 🧑‍✈️ Supervisor - has access to administrative functionality.
-
----
-
-## ⚙️ Main features
-
-- Purchase of airline tickets with payment via Stripe
-- Roles for staff with separate functionality
-- Data storage in PostgreSQL
-- Docker containers for full deployment
+- 🧾 **Passenger** — View available flights, purchase tickets via Stripe, download or cancel tickets.
+- 🧾 **Check-in Manager** — Validate tickets and register passengers.
+- 🛂 **Gate Manager** — Manage the boarding process.
+- 🧑‍✈️ **Supervisor** — Access administrative tools and dashboards.
 
 ---
 
-## 🚀 Quick start (via Docker)
+## ⚙️ Features
 
-### 1. Cloning the repository
+- 💳 Secure ticket purchases via **Stripe**
+- 👥 Role-based functionality for airport staff
+- 🗄 PostgreSQL for persistent data storage
+- 🐳 Dockerized deployment for easy setup
+- ✉️ Email notifications for ticket purchases
+- ⚙️ Background tasks handled by **Celery + Redis**
+
+---
+
+## 🚀 Quick Start (Docker)
+
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/yourusername/DjangoAir.git
 cd DjangoAir
 ```
 
-### 2. Run
+### 2. Launch the app
 ```bash
 docker compose up --build
 ```
 
-The service will be available on: http://localhost:8000
+After that the service will be available at: https://localhost/
 
 ---
 
-## 🛠 Running without Docker (optional)
-If you want to run the project locally without Docker:
+## 🛠 Manual Setup (Without Docker)
 
-1. Install Redis, PostgreSQL and create an .env file
+### 1. Requirements
+Install and run the following manually:
 
-PostgreSQL docker run example:
+- PostgreSQL
+- Redis
+- Python (recommended: 3.11)
+- Stripe CLI (for local webhook testing)
+
+PostgreSQL via Docker:
 ```bash
-docker run --name DjangoAir \
+docker run --name djangoair-postgres \
   -e POSTGRES_DB=DjangoAir \
   -e POSTGRES_USER=postgres \
   -e POSTGRES_PASSWORD=mysecretpassword \
@@ -51,27 +58,35 @@ docker run --name DjangoAir \
   -d postgres:latest
 ```
 
-Redis docker run example:
+Redis via Docker:
 ```bash
-docker run --name DjangoAir_redis \
-  -p 6379:6379
+docker run --name djangoair-redis \
+  -p 6379:6379 \
   -d redis:latest
 ```
 
-`.env` file must be in `DjangoAir/DjangoAir/.env` and must contains this options:
-```.dotenv
-DJANGO_SECRET_KEY=
-DEBUG=True
+### 2. Environment Variables
+Create a .env file at: DjangoAir/DjangoAir/settings/.env
+
+Here is example of .env file:
+```dotenv
+DJANGO_SECRET_KEY=your_secret_key
+DEBUG=True/False
 ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,web
-STRIPE_SECRET_KEY=
-STRIPE_PUBLISHABLE_KEY=
-STRIPE_WEBHOOK_SECRET=
-EMAIL_HOST_USER=
-EMAIL_HOST_PASSWORD=
-CLIENT_ID=
-CLIENT_SECRET=
+
+STRIPE_SECRET_KEY=your_stripe_secret
+STRIPE_PUBLISHABLE_KEY=your_stripe_publishable
+STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+
+EMAIL_HOST_USER=your_email@example.com
+EMAIL_HOST_PASSWORD=your_email_password
+
+CLIENT_ID=your_oauth_client_id
+CLIENT_SECRET=your_oauth_client_secret
+
 CELERY_BROKER_URL=redis://localhost:6379/0
 CELERY_RESULT_BACKEND=redis://localhost:6379/0
+
 POSTGRES_DB_NAME=DjangoAir
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=mysecretpassword
@@ -79,20 +94,63 @@ POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
 ```
 
-2. Activate the virtual environment and install the dependencies
+### 3. Setup and Run
 
-Run:
+#### 1. Clone the repository and go into project folder.
 ```bash
-pip install -r requirements.txt
+git clone https://github.com/yourusername/DjangoAir.git
+cd DjangoAir
+```
+
+#### 2. Create python venv and activate it.
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+#### 3. Install requirements.
+```bash
+pip install -r requirements.txt 
+```
+
+#### 4. Make migrations and collectstatic
+```bash
 python manage.py makemigrations
 python manage.py migrate
 python manage.py collectstatic
 python manage.py runserver
+```
+
+In separate terminals, run:
+```bash
+# Celery worker
 celery -A air worker --loglevel=info --pool=solo
+
+# Celery beat (periodic tasks)
 celery -A air beat --loglevel=info
+
+# Stripe webhook listener
 stripe listen --forward-to localhost:8000/api/succed_payment/
 ```
+
 ---
 
-# Author
+## 📂 Project Structure
+```
+DjangoAir/
+├── air/                  # Main Django project
+├── tickets/              # App for ticket management
+├── users/                # User roles and auth
+├── api/                  # REST API endpoints
+├── static/               # Static files
+├── templates/            # HTML templates
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## Author
 Oleh Vaskevych
