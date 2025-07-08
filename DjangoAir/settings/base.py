@@ -6,6 +6,10 @@ env = environ.Env(
     DEBUG=(bool, False),
 )
 
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost"])
+
+SECRET_KEY = env("DJANGO_SECRET_KEY", default="dev-secret-key")
+
 environ.Env.read_env()
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
