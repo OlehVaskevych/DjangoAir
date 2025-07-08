@@ -254,6 +254,12 @@ class CancelTicketAPIView(APIView):
                 )
 
             ticket = Ticket.objects.get(id=ticket_id)
+
+            if ticket.passenger != request.user:
+                return Response(
+                    {"success": False, "error": "Permission denied."}, status=403
+                )
+
             ticket.status = TicketStatusChoices.CANCELED
             ticket.save()
 
