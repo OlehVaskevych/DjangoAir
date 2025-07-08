@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import (AirlineUser, Airplane, Baggage, BoardingPass, CheckIn,
-                     Comfort, DietaryOption, Flight, Meal, Ticket)
+                     Comfort, DietaryOption, Flight, Meal, Ticket, Seats)
 
 
 class RoleBasedAdmin(admin.ModelAdmin):
@@ -61,3 +61,5 @@ admin.site.register(Meal, FlightAdmin)
 admin.site.register(Ticket, TicketAdmin)
 admin.site.register(CheckIn, CheckInManager)
 admin.site.register(BoardingPass, GateManager)
+
+admin.site.register(Seats, FlightAdmin)

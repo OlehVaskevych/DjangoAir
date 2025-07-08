@@ -16,7 +16,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect
 
 from .forms import LoginForm, RegisterForm
-from .models import Flight, Ticket, TicketStatusChoices
+from .models import Flight, Ticket, TicketStatusChoices, Seats, Meal, Baggage, Comfort
 
 stripe.api_key = settings.STRIPE_API_KEY
 
@@ -324,49 +324,71 @@ def create_checkout_session(request):
     - JsonResponse with the checkout session URL if successful.
     - JsonResponse with an error message if an exception occurred.
     """
-    if request.method == "POST":
-        user = request.user
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid request method"}, status=400)
 
-        try:
-            data = json.loads(request.body)
+    user = request.user
 
-            line_items = []
+    try:
+        data = json.loads(request.body)
+        flight_id = data.get("flightId")
+        selected_seats = data.get("selectedSeats", [])
+        selected_services = data.get("selectedServices", {})
 
-            for seat in data["selectedSeats"]:
-                line_items.append(
-                    {
-                        "price": seat["priceId"],
-                        "quantity": 1,
-                    }
-                )
+        line_items = []
 
-            selected_services = data.get("selectedServices", {})
-            for service_type in ["meals", "baggage", "comfort"]:
-                for service in selected_services.get(service_type, []):
-                    line_items.append(
-                        {
-                            "price": service["priceId"],
-                            "quantity": 1,
-                        }
-                    )
+        for seat in selected_seats:
+            seat_number = seat.get("seatNumber")
+            price_id = seat.get("priceId")
 
-            session = stripe.checkout.Session.create(
-                payment_method_types=["card"],
-                line_items=line_items,
-                mode="payment",
-                customer_email=user.email,
-                metadata={
-                    "user_id": user.id,
-                    "flight_id": data["flightId"],
-                    "seats": json.dumps(data["selectedSeats"]),
-                    "services": json.dumps(data.get("selectedServices", {})),
-                },
-                success_url="http://localhost:8000/bookings/",
-                cancel_url="http://localhost:8000/",
-            )
+            try:
+                db_seat = Seats.objects.get(flight_id=flight_id, seat_number=seat_number)
+            except Seats.DoesNotExist:
+                return JsonResponse({"error": f"Seat {seat_number} not found for this flight"}, status=400)
 
-            return JsonResponse({"url": session.url})
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
+            if db_seat.stripe_price_id != price_id:
+                return JsonResponse({"error": f"Invalid priceId for seat {seat_number}"}, status=400)
 
-    return JsonResponse({"error": "Invalid request method"}, status=400)
+            line_items.append({
+                "price": db_seat.stripe_price_id,
+                "quantity": 1
+            })
+
+        def validate_service(model, service_name):
+            for service in selected_services.get(service_name, []):
+                price_id = service.get("priceId")
+                try:
+                    model.objects.get(stripe_price_id=price_id)
+                except model.DoesNotExist:
+                    return JsonResponse({"error": f"Invalid {service_name} priceId: {price_id}"}, status=400)
+
+                line_items.append({
+                    "price": price_id,
+                    "quantity": 1
+                })
+            return None
+
+        for model, key in [(Meal, "meals"), (Baggage, "baggage"), (Comfort, "comfort")]:
+            response = validate_service(model, key)
+            if response:
+                return response
+
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=line_items,
+            mode="payment",
+            customer_email=user.email,
+            metadata={
+                "user_id": user.id,
+                "flight_id": flight_id,
+                "seats": json.dumps(selected_seats),
+                "services": json.dumps(selected_services),
+            },
+            success_url="http://localhost:8000/bookings/",
+            cancel_url="http://localhost:8000/",
+        )
+
+        return JsonResponse({"url": session.url})
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

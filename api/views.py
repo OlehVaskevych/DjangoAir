@@ -14,12 +14,12 @@ from rest_framework.authentication import (BasicAuthentication,
                                            TokenAuthentication)
 from rest_framework.decorators import (api_view, authentication_classes,
                                        permission_classes)
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from air.models import (AirlineUser, Airplane, Baggage, BoardingPass, CheckIn,
-                        Comfort, Flight, Meal, Ticket, TicketStatusChoices)
+                        Comfort, Flight, Meal, Ticket, TicketStatusChoices, Seats)
 
 from .serializers import (AirlineUserSerializer, AirplaneSerializer,
                           BaggageSerializer, BoardingPassSerializer,
@@ -71,7 +71,7 @@ class CurrentUserAPIView(APIView):
     """
 
     authentication_classes = [BasicAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         if request.user.is_authenticated:
@@ -403,3 +403,47 @@ class StripeWebhookView(APIView):
                 )
 
         return Response(status=status.HTTP_200_OK)
+
+
+class SeatMapAPIView(APIView):
+    def get(self, request, flight_id):
+        seats = Seats.objects.filter(flight_id=flight_id)
+
+        if not seats.exists():
+            return Response({"seatMap": []}, status=status.HTTP_200_OK)
+
+        seat_map_dict = {}
+
+        for seat in seats:
+            try:
+                row_number = int(''.join(filter(str.isdigit, seat.seat_number)))
+                seat_letter = ''.join(filter(str.isalpha, seat.seat_number)).upper()
+            except (ValueError, TypeError):
+                continue
+
+            seat_number = f"{row_number}{seat_letter}"
+
+            if row_number not in seat_map_dict:
+                seat_map_dict[row_number] = {
+                    "row": row_number,
+                    "seats": [],
+                    "class": seat.seat_class,
+                    "stripe_price_id": seat.stripe_price_id,
+                    "occupied_seats": []
+                }
+
+            if seat_letter not in seat_map_dict[row_number]["seats"]:
+                seat_map_dict[row_number]["seats"].append(seat_letter)
+
+            if seat.is_reserved:
+                seat_map_dict[row_number]["occupied_seats"].append(seat_number)
+
+        # Сортуємо літери всередині кожного ряду
+        for row in seat_map_dict.values():
+            row["seats"].sort()
+            row["occupied_seats"].sort()
+
+        # Перетворити словник у список і відсортувати по номеру ряду
+        seat_map = [seat_map_dict[row] for row in sorted(seat_map_dict.keys())]
+
+        return Response({"seatMap": seat_map}, status=status.HTTP_200_OK)

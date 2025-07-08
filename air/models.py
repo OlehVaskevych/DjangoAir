@@ -208,14 +208,19 @@ class Seats(models.Model):
     )
     seat_number = models.CharField(
         max_length=10,
-        choices=SeatClassChoices.choices,
-        default=SeatClassChoices.ECONOMY,
     )
     stripe_price_id = models.CharField(
         max_length=100,
         verbose_name="Stripe price ID",
         choices=SeatClassPriceID.choices,
         default=SeatClassPriceID.ECONOMY_PRICE,
+    )
+    seat_class = models.CharField(
+        max_length=20,
+        choices=SeatClassChoices.choices,
+        default=SeatClassChoices.ECONOMY,
+        verbose_name="Seat class",
+        help_text="Seat class of the seat",
     )
     is_reserved = models.BooleanField(default=False, verbose_name="Is reserved")
 

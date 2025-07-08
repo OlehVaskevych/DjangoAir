@@ -15,6 +15,7 @@ def clear():
     Ticket.objects.all().delete()
     CheckIn.objects.all().delete()
     BoardingPass.objects.all().delete()
+    Seats.objects.all().delete()
 
     print('All tables cleared successfully.')
 

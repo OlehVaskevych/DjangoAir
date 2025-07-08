@@ -232,7 +232,6 @@
         <path fill="rgba(26, 26, 46, 0.5)" fill-opacity="0.5" d="M0,96L48,112C96,128,192,160,288,186.7C384,213,480,235,576,224C672,213,768,171,864,165.3C960,160,1056,192,1152,197.3C1248,203,1344,181,1392,170.7L1440,160L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path>
       </svg>
     </div>
-
     <div class="container py-5 z-index-2 position-relative">
       <div class="row justify-content-center">
         <div class="col-lg-11">
@@ -240,88 +239,116 @@
             <h2 class="display-5 fw-bold text-gradient-alt">Select Your Seats</h2>
             <p class="text-white opacity-75">Please select {{ bookingDetails.passengers }} seat(s) for your flight</p>
           </div>
-
           <div class="card glass-card border-0 rounded-4">
             <div class="card-body p-4 p-md-5">
               <div class="row g-4">
                 <!-- Airplane Map -->
                 <div class="col-lg-8">
-                  <div class="airplane-container">
-                    <!-- Airplane Header -->
-                    <div class="d-flex justify-content-center mb-5">
-                      <div class="airplane-cockpit"></div>
-                    </div>
-
-                    <!-- Seat Map -->
-                    <div class="airplane-seats">
-                      <!-- Використовуємо seatMap для відображення різних класів місць -->
-                      <div v-for="(section, index) in seatSections" :key="index" class="cabin-section mb-4">
-                        <div :class="`section-label ${section.labelClass} mb-3`">{{ section.name }}</div>
-
-                        <div class="seat-row" v-for="row in section.rows" :key="`${section.class}-${row}`">
-                          <div class="row-number">{{ row }}</div>
-
-                          <!-- Left seats (A, B, C) -->
-                          <div class="seats-group">
-                            <div
-                              v-for="seat in ['A', 'B', 'C']"
-                              :key="`${row}${seat}`"
-                              class="seat"
-                              :class="{
-                                [`${section.class}-seat`]: true,
-                                'selected': isSelected(`${row}${seat}`),
-                                'occupied': isOccupied(`${row}${seat}`),
-                                'available': !isOccupied(`${row}${seat}`)
-                              }"
-                              @click="toggleSeat(`${row}${seat}`, section.class, section.priceId)"
-                            >
-                              {{ seat }}
-                            </div>
+                  <div class="airplane-container position-relative">
+                    <!-- Loading State / Choose Flight Message -->
+                    <div
+                      v-if="!isSeatMapReady"
+                      class="seat-map-placeholder d-flex flex-column align-items-center justify-content-center"
+                    >
+                      <div class="placeholder-content text-center">
+                        <div class="loading-spinner mb-4" v-if="isLoadingSeatMap">
+                          <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
                           </div>
-
-                          <div class="aisle"></div>
-
-                          <!-- Right seats (D, E, F) -->
-                          <div class="seats-group">
-                            <div
-                              v-for="seat in ['D', 'E', 'F']"
-                              :key="`${row}${seat}`"
-                              class="seat"
-                              :class="{
-                                [`${section.class}-seat`]: true,
-                                'selected': isSelected(`${row}${seat}`),
-                                'occupied': isOccupied(`${row}${seat}`),
-                                'available': !isOccupied(`${row}${seat}`)
-                              }"
-                              @click="toggleSeat(`${row}${seat}`, section.class, section.priceId)"
-                            >
-                              {{ seat }}
-                            </div>
-                          </div>
+                          <p class="text-white mt-3">Loading seat map...</p>
+                        </div>
+                        <div v-else class="choose-flight-message">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-airplane text-primary mb-3" viewBox="0 0 16 16">
+                            <path d="M6.428 1.151C6.708.591 7.213 0 8 0s1.292.592 1.572 1.151C9.861 1.73 10 2.431 10 3v3.691l5.17 2.585a1.5 1.5 0 0 1 .83 1.342V12a.5.5 0 0 1-.582.493l-5.507-.918-.375 2.253 1.318 1.318A.5.5 0 0 1 10.5 16h-5a.5.5 0 0 1-.354-.854l1.319-1.318-.376-2.253-5.507.918A.5.5 0 0 1 0 12v-1.382a1.5 1.5 0 0 1 .83-1.342L6 6.691V3c0-.568.14-1.271.428-1.849Z"/>
+                          </svg>
+                          <h4 class="text-white mb-2">Choose Your Flight First</h4>
+                          <p class="text-white opacity-75">Please select a destination and date to view available seats</p>
                         </div>
                       </div>
+                    </div>
 
-                      <!-- Legend -->
-                      <div class="seat-legend mt-4 d-flex justify-content-center flex-wrap gap-3">
-                        <div class="d-flex align-items-center me-3">
-                          <div class="seat-sample first-class-sample"></div>
-                          <span class="ms-2 small text-white">First Class (${{ seatPrices.first.toFixed(2) }})</span>
+                    <!-- Actual Seat Map -->
+                    <div
+                      class="seat-map-container"
+                      :class="{
+                        'seat-map-blur': !isSeatMapReady,
+                        'seat-map-ready': isSeatMapReady
+                      }"
+                    >
+                      <!-- Airplane Header -->
+                      <div class="d-flex justify-content-center mb-5">
+                        <div class="airplane-cockpit"></div>
+                      </div>
+
+                      <!-- Seat Map -->
+                      <div class="airplane-seats">
+                        <!-- ВАЖЛИВО: Використовуємо displaySeatSections замість seatSections -->
+                        <div v-for="(section, index) in displaySeatSections" :key="index" class="cabin-section mb-4">
+                          <div :class="`section-label ${section.labelClass} mb-3`">{{ section.name }}</div>
+                          <div class="seat-row" v-for="row in section.rows" :key="`${section.class}-${row}`">
+                            <div class="row-number">{{ row }}</div>
+                            <!-- Left seats (A, B, C) -->
+                            <div class="seats-group">
+                              <div
+                                v-for="seat in splitSeats(getRowSeats(row)).left"
+                                :key="`${row}${seat}`"
+                                class="seat"
+                                :class="{
+                                  [`${section.class}-seat`]: true,
+                                  'selected': isSelected(`${row}${seat}`),
+                                  'occupied': isOccupied(`${row}${seat}`),
+                                  'available': !isOccupied(`${row}${seat}`),
+                                  'disabled': !isSeatMapReady
+                                }"
+                                @click="isSeatMapReady ? toggleSeat(`${row}${seat}`, section.class, section.priceId) : null"
+                              >
+                                {{ seat }}
+                              </div>
+                            </div>
+                            <div class="aisle"></div>
+                            <!-- Right seats (D, E, F) -->
+                            <div class="seats-group">
+                              <div
+                                v-for="seat in splitSeats(getRowSeats(row)).right"
+                                :key="`${row}${seat}`"
+                                class="seat"
+                                :class="{
+                                  [`${section.class}-seat`]: true,
+                                  'selected': isSelected(`${row}${seat}`),
+                                  'occupied': isOccupied(`${row}${seat}`),
+                                  'available': !isOccupied(`${row}${seat}`),
+                                  'disabled': !isSeatMapReady
+                                }"
+                                @click="isSeatMapReady ? toggleSeat(`${row}${seat}`, section.class, section.priceId) : null"
+                              >
+                                {{ seat }}
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div class="d-flex align-items-center me-3">
-                          <div class="seat-sample business-sample"></div>
-                          <span class="ms-2 small text-white">Business (${{ seatPrices.business.toFixed(2) }})</span>
-                        </div>
-                        <div class="d-flex align-items-center me-3">
-                          <div class="seat-sample economy-sample"></div>
-                          <span class="ms-2 small text-white">Economy (${{ seatPrices.economy.toFixed(2) }})</span>
-                        </div>
-                        <div class="d-flex align-items-center me-3">
-                          <div class="seat-sample selected"></div>
-                          <span class="ms-2 small text-white">Selected</span>
-                        </div>
-                        <div class="d-flex align-items-center">
-                          <div class="seat-sample occupied"></div>
-                          <span class="ms-2 small text-white">Occupied</span>
+
+                        <!-- Legend -->
+                        <div class="seat-legend mt-4 d-flex justify-content-center flex-wrap gap-3">
+                          <div class="d-flex align-items-center me-3">
+                            <div class="seat-sample first-class-sample"></div>
+                            <span class="ms-2 small text-white">First Class (${{ seatPrices.first.toFixed(2) }})</span>
+                          </div>
+                          <div class="d-flex align-items-center me-3">
+                            <div class="seat-sample business-sample"></div>
+                            <span class="ms-2 small text-white">Business (${{ seatPrices.business.toFixed(2) }})</span>
+                          </div>
+                          <div class="d-flex align-items-center me-3">
+                            <div class="seat-sample economy-sample"></div>
+                            <span class="ms-2 small text-white">Economy (${{ seatPrices.economy.toFixed(2) }})</span>
+                          </div>
+                          <div class="d-flex align-items-center me-3">
+                            <div class="seat-sample selected"></div>
+                            <span class="ms-2 small text-white">Selected</span>
+                          </div>
+                          <div class="d-flex align-items-center">
+                            <div class="seat-sample occupied"></div>
+                            <span class="ms-2 small text-white">Occupied</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -348,15 +375,12 @@
                           <span class="fw-medium text-white">{{ bookingDetails.passengers }}</span>
                         </div>
                       </div>
-
                       <hr class="my-4 opacity-25">
-
                       <div class="mb-4">
                         <div class="d-flex justify-content-between mb-2">
                           <span class="text-white opacity-75">Selected Seats:</span>
                           <span class="fw-medium text-white">{{ selectedSeatsDisplay }}</span>
                         </div>
-
                         <!-- Деталі вибраних місць -->
                         <div v-if="selectedSeats.length > 0" class="seat-details mt-3">
                           <div v-for="(seat, index) in selectedSeats" :key="index" class="seat-detail-item p-2 mb-2 rounded">
@@ -371,16 +395,13 @@
                           </div>
                         </div>
                       </div>
-
                       <hr class="my-4 opacity-25">
-
                       <div class="mb-4">
                         <div class="d-flex justify-content-between fs-5 fw-bold">
                           <span class="text-white">Total:</span>
                           <span class="text-glow">${{ calculateSeatsTotal().toFixed(2) }}</span>
                         </div>
                       </div>
-
                       <div class="d-grid gap-2">
                         <button
                           @click="proceedToServices"
@@ -389,7 +410,6 @@
                         >
                           <span class="fw-bold">Proceed to Services</span>
                           <div class="btn-particles"></div>
-
                         </button>
                         <button
                           @click="submitPayment"
@@ -477,18 +497,7 @@ export default {
     const minDate = today.toISOString().split('T')[0];
 
     return {
-      seatMap: [
-        { row: 1, seats: ['A', 'B', 'C', 'D', 'E', 'F'], class: 'first', stripe_price_id: 'price_1RP0zFQMzydK9SUptZsV3qKC' },
-        { row: 2, seats: ['A', 'B', 'C', 'D', 'E', 'F'], class: 'first', stripe_price_id: 'price_1RP0zFQMzydK9SUptZsV3qKC' },
-        { row: 3, seats: ['A', 'B', 'C', 'D', 'E', 'F'], class: 'business', stripe_price_id: 'price_1RP0yyQMzydK9SUpQVDc8Xlz' },
-        { row: 4, seats: ['A', 'B', 'C', 'D', 'E', 'F'], class: 'business', stripe_price_id: 'price_1RP0yyQMzydK9SUpQVDc8Xlz' },
-        { row: 5, seats: ['A', 'B', 'C', 'D', 'E', 'F'], class: 'economy', stripe_price_id: 'price_1RP0yYQMzydK9SUprJfIiJYw' },
-        { row: 6, seats: ['A', 'B', 'C', 'D', 'E', 'F'], class: 'economy', stripe_price_id: 'price_1RP0yYQMzydK9SUprJfIiJYw' },
-        { row: 7, seats: ['A', 'B', 'C', 'D', 'E', 'F'], class: 'economy', stripe_price_id: 'price_1RP0yYQMzydK9SUprJfIiJYw' },
-        { row: 8, seats: ['A', 'B', 'C', 'D', 'E', 'F'], class: 'economy', stripe_price_id: 'price_1RP0yYQMzydK9SUprJfIiJYw' },
-        { row: 9, seats: ['A', 'B', 'C', 'D', 'E', 'F'], class: 'economy', stripe_price_id: 'price_1RP0yYQMzydK9SUprJfIiJYw' },
-        { row: 10, seats: ['A', 'B', 'C', 'D', 'E', 'F'], class: 'economy', stripe_price_id: 'price_1RP0yYQMzydK9SUprJfIiJYw' }
-      ],
+      seatMap: [],
       seatPrices: {
         first: 250,
         business: 150,
@@ -497,11 +506,34 @@ export default {
       modal: null,
       destinations: UNIQUE_CITIES_FROM_SERVER,
       allFlights: FLIGHT_DATES_FROM_SERVER,
+      seatSections: [
+        {
+          name: 'First Class',
+          class: 'first-class',
+          labelClass: 'first-class-label',
+          rows: [1, 2],
+          priceId: 'price_1RP0zFQMzydK9SUptZsV3qKC',
+        },
+        {
+          name: 'Business Class',
+          class: 'business',
+          labelClass: 'business-class-label',
+          rows: [3, 4, 5],
+          priceId: 'price_1RP0yyQMzydK9SUpQVDc8Xlz'
+        },
+        {
+          name: 'Economy',
+          class: 'economy',
+          labelClass: 'economy-label',
+          rows: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+          priceId: 'price_1RP0yYQMzydK9SUprJfIiJYw'
+        }
+      ],
       currentSection: 'intro',
       bookingDetails: {
         flightId: null,
         destination: '',
-        date: null,
+        date: '',
         passengers: 1
       },
       selectedServices: {
@@ -512,9 +544,12 @@ export default {
       availableDates: [],
       selectedSeats: [],
       occupiedSeats: [],
+      rowSeatsMap: {},
       seatPrice: 149.99,
       minDate: minDate,
       isProfileMenuOpen: false,
+      isLoadingSeatMap: false,
+      seatMapError: null,
       showAuthRequiredMessage: false,
 
       // Authentication state and user data
@@ -561,48 +596,64 @@ export default {
         .join('');
     },
 
-    /**
-     * Groups seats by class for display on the seat map
-     * Organizes rows into sections (First Class, Business Class, Economy)
-     * @returns {Array} Array of section objects with name, class, labelClass, and rows properties
-     */
-    seatSections() {
-      const sections = [
-        {
-          name: 'First Class',
-          class: 'first-class',
-          labelClass: 'first-class-label',
-          rows: [1, 2],
-          priceId: 'price_1RP0zFQMzydK9SUptZsV3qKC',
-        },
-        {
-          name: 'Business Class',
-          class: 'business',
-          labelClass: 'business-class-label',
-          rows: [3, 4],
-          priceId: 'price_1RP0yyQMzydK9SUpQVDc8Xlz'
-        },
-        {
-          name: 'Economy',
-          class: 'economy',
-          labelClass: 'economy-label',
-          rows: [5, 6, 7, 8, 9, 10],
-          priceId: 'price_1RP0yYQMzydK9SUprJfIiJYw'
-        }
-      ];
+    selectedSeatsDisplay() {
+      if (this.selectedSeats.length === 0) {
+        return 'No seats selected';
+      }
+      return this.selectedSeats.map(seat => seat.id).join(', ');
+    },
 
-      return sections;
+    isSeatMapReady() {
+      return this.seatMap && this.seatMap.length > 0 && !this.isLoadingSeatMap;
+    },
+    displaySeatSections() {
+      return this.processSeatMapFromServer();
     },
 
     /**
-     * Formats selected seats for display in the booking summary
-     * Joins seat IDs with commas or returns 'None' if no seats are selected
-     * @returns {string} Comma-separated list of seat IDs or 'None'
+     * Повертає доступні місця для конкретного ряду
+     * @param {number} row - Номер ряду
+     * @returns {Array} Масив доступних літер місць
      */
-    selectedSeatsDisplay() {
-      if (!this.selectedSeats.length) return 'None';
-      return this.selectedSeats.map(seat => seat.id).join(', ');
+    getRowSeats() {
+      return (row) => {
+        if (this.rowSeatsMap && this.rowSeatsMap[row]) {
+          return this.rowSeatsMap[row];
+        }
+        // Fallback до стандартного розкладу
+        return ['A', 'B', 'C', 'D', 'E', 'F'];
+      };
+    },
+
+    /**
+     * Розділяє місця ряду на ліві та праві групи
+     * @param {Array} seats - Масив літер місць
+     * @returns {Object} Об'єкт з left та right масивами
+     */
+    splitSeats() {
+      return (seats) => {
+        if (seats.length <= 2) {
+          // Для First Class (A, B) - всі місця зліва
+          return {
+            left: seats.slice(0, 1),
+            right: seats.slice(1)
+          };
+        } else if (seats.length <= 4) {
+          // Для 4 місць - по 2 з кожного боку
+          return {
+            left: seats.slice(0, 2),
+            right: seats.slice(2)
+          };
+        } else {
+          // Для 6 місць - 3 зліва, 3 справа
+          return {
+            left: seats.slice(0, 3),
+            right: seats.slice(3)
+          };
+        }
+      };
     }
+
   },
 
   methods: {
@@ -781,9 +832,24 @@ export default {
     /**
      * Checks if a specific seat is already occupied
      * @param {string} seat - Seat ID to check (e.g., "1A", "2B")
-     * @returns {boolean} True if the seat is in the occupiedSeats array, false otherwise
+     * @returns {boolean} True if the seat is occupied or reserved, false otherwise
      */
     isOccupied(seat) {
+      // Якщо є дані з сервера, використовуємо їх
+      if (this.seatMap && this.seatMap.length > 0) {
+        // Шукаємо секцію, яка містить цей ряд
+        for (const section of this.seatMap) {
+          const rowNumber = parseInt(seat.match(/\d+/)[0]);
+          const seatLetter = seat.match(/[A-Z]/)[0];
+
+          if (section.row === rowNumber && section.seats.includes(seatLetter)) {
+            // Перевіряємо чи є це місце в списку зайнятих/зарезервованих
+            return section.occupied_seats && section.occupied_seats.includes(seat);
+          }
+        }
+        return false;
+      }
+      // Fallback до статичного списку
       return this.occupiedSeats.includes(seat);
     },
 
@@ -794,7 +860,16 @@ export default {
      * @returns {number} Price of the seat based on its class
      */
     getSeatPrice(seatClass) {
-      return this.seatPrices[seatClass] || this.seatPrices.economy;
+      switch (seatClass) {
+        case 'first-class':
+          return this.seatPrices.first;
+        case 'business':
+          return this.seatPrices.business;
+        case 'economy':
+          return this.seatPrices.economy;
+        default:
+          return 0;
+      }
     },
 
     /**
@@ -804,11 +879,15 @@ export default {
      * @returns {string} User-friendly class name for display
      */
     getSeatClassName(seatClass) {
-      switch(seatClass) {
-        case 'first': return 'First Class';
-        case 'business': return 'Business Class';
-        case 'economy': return 'Economy';
-        default: return 'Economy';
+      switch (seatClass) {
+        case 'first-class':
+          return 'First Class';
+        case 'business':
+          return 'Business Class';
+        case 'economy':
+          return 'Economy';
+        default:
+          return 'Unknown Class';
       }
     },
 
@@ -914,7 +993,119 @@ export default {
       }, 100);
     },
 
+    /**
+     * Обробляє карту місць отриману з сервера
+     * Конвертує дані сервера в формат для відображення
+     * @returns {Array} Оброблені секції місць
+     */
+    processSeatMapFromServer() {
+      console.log('Processing seat map from server:', this.seatMap);
 
+      if (!this.seatMap || this.seatMap.length === 0) {
+        console.log('No seat map data, using static sections');
+        return this.seatSections; // fallback до статичної карти
+      }
+
+      // Групуємо місця за класами з інформацією про доступні місця
+      const seatsByClass = {
+        first: [],
+        business: [],
+        economy: []
+      };
+
+      // Створюємо мапу рядів з доступними місцями
+      const rowSeatsMap = {};
+
+      this.seatMap.forEach(section => {
+        const seatClass = section.class.toLowerCase();
+        if (seatsByClass[seatClass]) {
+          // Зберігаємо інформацію про ряд та доступні місця
+          const rowData = {
+            row: section.row,
+            seats: section.seats,
+            class: seatClass,
+            stripe_price_id: section.stripe_price_id
+          };
+
+          seatsByClass[seatClass].push(rowData);
+          rowSeatsMap[section.row] = section.seats;
+        }
+      });
+
+      // Зберігаємо мапу рядів для використання в template
+      this.rowSeatsMap = rowSeatsMap;
+
+      console.log('Seats grouped by class:', seatsByClass);
+      console.log('Row seats map:', rowSeatsMap);
+
+      // Створюємо секції на основі даних з сервера
+      const sections = [];
+
+      const buildSection = (classKey, name, labelClass, priceId) => {
+        if (seatsByClass[classKey].length > 0) {
+          const rows = [...new Set(seatsByClass[classKey].map(seat => seat.row))].sort((a, b) => a - b);
+
+          sections.push({
+            name,
+            class: classKey,
+            labelClass,
+            rows,
+            priceId
+          });
+          console.log(`Added ${name} section with rows:`, rows);
+        }
+      };
+
+      buildSection('first', 'First Class', 'first-class-label', 'price_1RP0zFQMzydK9SUptZsV3qKC');
+      buildSection('business', 'Business Class', 'business-class-label', 'price_1RP0yyQMzydK9SUpQVDc8Xlz');
+      buildSection('economy', 'Economy', 'economy-label', 'price_1RP0yYQMzydK9SUprJfIiJYw');
+
+      console.log('Final processed sections:', sections);
+      return sections.length > 0 ? sections : this.seatSections;
+    },
+
+    // Оновлений метод для завантаження карти місць з додатковим логуванням
+    async fetchSeatMap(flightId) {
+      if (!flightId) return;
+
+      console.log(`Fetching seat map for flight ID: ${flightId}`);
+      this.isLoadingSeatMap = true;
+      this.seatMapError = null;
+
+      try {
+        const response = await fetch(`/api/flights/${flightId}/seat-map/`);
+        if (!response.ok) throw new Error("Error while taking seat map");
+
+        const data = await response.json();
+        this.seatMap = data.seatMap || [];
+        console.log('Seat map loaded successfully:', this.seatMap);
+        console.log('Seat map length:', this.seatMap.length);
+
+        // Оновлюємо зайняті місця на основі нових даних з сервера
+        const allOccupiedSeats = [];
+        this.seatMap.forEach(section => {
+          if (section.occupied_seats) {
+            allOccupiedSeats.push(...section.occupied_seats);
+          }
+        });
+        this.occupiedSeats = allOccupiedSeats;
+        console.log('Occupied seats updated:', this.occupiedSeats);
+
+        // Форсуємо оновлення computed властивостей
+        this.$nextTick(() => {
+          console.log('isSeatMapReady after loading:', this.isSeatMapReady);
+          console.log('displaySeatSections after loading:', this.displaySeatSections);
+        });
+
+      } catch (error) {
+        console.error('Error while loading seat map:', error);
+        this.seatMapError = error.message;
+        this.seatMap = []; // Очищуємо карту при помилці
+      } finally {
+        this.isLoadingSeatMap = false;
+        console.log('Seat map loading finished. isLoadingSeatMap:', this.isLoadingSeatMap);
+      }
+    },
 
     /**
      * Submits payment information to the server
@@ -926,32 +1117,33 @@ export default {
      * @returns {Promise<void>}
      */
     async submitPayment() {
-      // Check authentication
       if (!this.isAuthenticated) {
         this.attemptedSection = 'payment';
         this.showAuthRequiredMessage = true;
         return;
       }
 
-      // Validate seat selection
       if (this.selectedSeats.length !== this.bookingDetails.passengers) {
         console.error('Choose correct quantity of passengers!');
         return;
       }
 
-      // Prepare detailed information about selected seats
+      console.log(this.selectedSeats);
+      // ✅ Підготовка місць у форматі, який очікує бекенд
       const seatDetails = this.selectedSeats.map(seat => ({
-        id: seat.id,
-        class: seat.class,
-        price: this.getSeatPrice(seat.class),
+        seatNumber: seat.id, // 🔁 зміна з id на seat_number
         priceId: seat.priceId,
       }));
 
-      // Calculate total amount in cents for payment processing
       const totalAmount = Math.round(this.calculateSeatsTotal() * 100);
 
+      console.log(JSON.stringify({
+        flightId: this.bookingDetails.flightId,
+        selectedSeats: seatDetails,
+        selectedServices: this.selectedServices,
+      }));
+
       try {
-        // Send payment request to server
         const response = await fetch(`/create-checkout-session/`, {
           method: 'POST',
           headers: {
@@ -963,19 +1155,18 @@ export default {
             destination: this.bookingDetails.destination,
             date: this.bookingDetails.date,
             seats: this.selectedSeats.length,
-            selectedSeats: seatDetails,
+            selectedSeats: seatDetails, // ✅ оновлений масив
             totalAmount: totalAmount,
             selectedServices: this.selectedServices,
-          })
+          }),
         });
 
         const data = await response.json();
 
-        // Redirect to payment URL if available
         if (data.url) {
           window.location.href = data.url;
         } else {
-          console.error('Error');
+          console.error('Error:', data.error || 'Unknown error');
         }
       } catch (error) {
         console.error('Request error:', error);
@@ -1158,6 +1349,18 @@ export default {
       } else {
         console.log('Error!');
       }
+    },
+
+    'bookingDetails.flightId'(newFlightId, oldFlightId) {
+      if (newFlightId && newFlightId !== oldFlightId) {
+        // Очищуємо попередні дані
+        this.seatMap = [];
+        this.selectedSeats = [];
+        this.seatMapError = null;
+
+        // Завантажуємо нову карту місць
+        this.fetchSeatMap(newFlightId);
+      }
     }
   },
 
@@ -1210,3 +1413,121 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+/* Додайте ці стилі */
+
+/* Контейнер для placeholder повідомлення */
+.seat-map-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(26, 26, 46, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  z-index: 10;
+  min-height: 500px;
+}
+
+.placeholder-content {
+  padding: 2rem;
+}
+
+.choose-flight-message {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Стилі для контейнера карти місць */
+.seat-map-container {
+  transition: all 0.5s ease;
+  position: relative;
+}
+
+.seat-map-blur {
+  filter: blur(8px);
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.seat-map-ready {
+  filter: none;
+  opacity: 1;
+  pointer-events: auto;
+  animation: seatMapFadeIn 0.8s ease-out;
+}
+
+/* Стилі для відключених місць */
+.seat.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Анімації */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes seatMapFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Стилі для спінера завантаження */
+.loading-spinner {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Покращені стилі для airplane-container */
+.airplane-container {
+  min-height: 500px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive стилі */
+@media (max-width: 768px) {
+  .seat-map-placeholder {
+    min-height: 400px;
+  }
+
+  .placeholder-content {
+    padding: 1rem;
+  }
+
+  .airplane-container {
+    min-height: 400px;
+    padding: 1rem;
+  }
+}
+</style>

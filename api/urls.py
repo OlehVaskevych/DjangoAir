@@ -5,7 +5,7 @@ from .views import (AdditionalServicesAPIView, AirlineUsersViewSet,
                     BaggageViewSet, BoardingPassViewSet, CancelTicketAPIView,
                     CheckInViewSet, ComfortViewSet, CurrentUserAPIView,
                     MealViewSet, StripeWebhookView, TicketViewSet,
-                    UserTicketsAPIView)
+                    UserTicketsAPIView, SeatMapAPIView)
 
 router = DefaultRouter()
 
@@ -26,6 +26,8 @@ urlpatterns = [
     path("get_tickets/", UserTicketsAPIView.as_view(), name="get_tickets"),
     path("cancel-ticket/", CancelTicketAPIView.as_view(), name="cancel_ticket"),
     path("succeed_payment/", StripeWebhookView.as_view(), name="succeed_payment"),
+
+    path('flights/<int:flight_id>/seat-map/', SeatMapAPIView.as_view(), name="seat_map"),
     # Custom API endpoint to retrieve the current authenticated user`s information
     path("current_user/", CurrentUserAPIView.as_view(), name="current_user"),
     path("", include(router.urls)),
