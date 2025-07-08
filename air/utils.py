@@ -25,7 +25,15 @@ def generate_unique_booking_reference(length=10, max_attempts=10):
             return ref
     raise Exception('Could not generate unique booking reference')
 
+# Generates a booking reference like 'A1B2C3D4E5'
 def generate_booking_reference():
+    """
+    Generates a random 10-character booking reference consisting of
+    uppercase letters and digits.
+
+    Returns:
+    - str: A 10-character alphanumeric booking reference.
+    """
     return "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
 
 def get_random_gate():

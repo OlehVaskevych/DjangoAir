@@ -17,20 +17,9 @@ from django.views.decorators.csrf import csrf_protect
 
 from .forms import LoginForm, RegisterForm
 from .models import Flight, Ticket, TicketStatusChoices, Seats, Meal, Baggage, Comfort
+from .utils import generate_booking_reference
 
 stripe.api_key = settings.STRIPE_API_KEY
-
-
-# Generates a booking reference like 'A1B2C3D4E5'
-def generate_booking_reference():
-    """
-    Generates a random 10-character booking reference consisting of
-    uppercase letters and digits.
-
-    Returns:
-    - str: A 10-character alphanumeric booking reference.
-    """
-    return "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
 
 
 # Formats Django form or serializer errors into a plain dictionary
@@ -51,7 +40,7 @@ def format_errors(errors: ErrorDict) -> dict:
 
 
 # Generates a unique username by appending a number if needed
-def generate_unique_username(base_username):
+def generate_unique_username(base_username, User):
     """
     Generates a unique username based on the given base username.
     If the base username is already taken, appends a number and increments it until available.
@@ -62,7 +51,6 @@ def generate_unique_username(base_username):
     Returns:
         str: A unique username that does not exist in the user model.
     """
-    User = get_user_model()
     username = base_username
     counter = 1
     while User.objects.filter(username=username).exists():
@@ -248,7 +236,7 @@ def register(request):
             user = form.save(commit=False)
             user.set_password(password)
             if User.objects.filter(username=base_username).exists():
-                username = generate_unique_username(base_username)
+                username = generate_unique_username(base_username, User)
                 user.username = username
             else:
                 user.username = base_username
@@ -388,7 +376,16 @@ def create_checkout_session(request):
             cancel_url="http://localhost:8000/",
         )
 
-        return JsonResponse({"url": session.url})
-
+        return JsonResponse({
+            "success": True,
+            "data": {
+                "url": session.url
+            }
+        })
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        return JsonResponse({
+            "success": False,
+            "errors": {
+                "non_field_error": str(e)
+            }
+        }, status=500)
