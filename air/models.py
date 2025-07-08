@@ -70,6 +70,8 @@ class Meal(models.Model):
         help_text="Description of the meal",
     )
     price = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
         verbose_name="Meal price",
         help_text="Price of the meal",
     )
@@ -107,6 +109,8 @@ class Baggage(models.Model):
         help_text="Description of the baggage",
     )
     price = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
         verbose_name="Baggage price",
         help_text="Price of the baggage",
     )
@@ -139,6 +143,8 @@ class Comfort(models.Model):
         help_text="Description of the comfort option",
     )
     price = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
         verbose_name="Comfort option price",
         help_text="Price of the comfort option",
     )
@@ -166,6 +172,21 @@ class Airplane(models.Model):
         verbose_name="Airplane seat capacity",
         help_text="Seat capacity of the airplane",
     )
+    economy_seats = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Airplane economy seats",
+        help_text="Seat capacity of the airplane",
+    )
+    business_seats = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Airplane business seats",
+        help_text="Seat capacity of the airplane",
+    )
+    first_class_seats = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Airplane first class seats",
+        help_text="Seat capacity of the airplane",
+    )
 
     def __str__(self):
         return f"{self.name} ({self.seat_capacity} seats)"
@@ -173,6 +194,30 @@ class Airplane(models.Model):
     class Meta:
         verbose_name = "Airplane"
         verbose_name_plural = "Airplanes"
+
+
+class Seats(models.Model):
+    class SeatClassPriceID(models.TextChoices):
+        ECONOMY_PRICE = "price_1RP0yYQMzydK9SUprJfIiJYw", "Economy price"
+        BUSINESS_PRICE = "price_1RP0yyQMzydK9SUpQVDc8Xlz", "Business price"
+        FIRSTCLASS_PRICE = "price_1RP0zFQMzydK9SUptZsV3qKC", "First class price"
+
+
+    flight = models.ForeignKey(
+        "Flight", on_delete=models.CASCADE, verbose_name="seats"
+    )
+    seat_number = models.CharField(
+        max_length=10,
+        choices=SeatClassChoices.choices,
+        default=SeatClassChoices.ECONOMY,
+    )
+    stripe_price_id = models.CharField(
+        max_length=100,
+        verbose_name="Stripe price ID",
+        choices=SeatClassPriceID.choices,
+        default=SeatClassPriceID.ECONOMY_PRICE,
+    )
+    is_reserved = models.BooleanField(default=False, verbose_name="Is reserved")
 
 
 class Flight(models.Model):
