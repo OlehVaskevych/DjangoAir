@@ -22,7 +22,8 @@ class RegisterForm(forms.ModelForm):
     def clean_email(self):
         """Ensure email is unique."""
         email = self.cleaned_data.get("email")
-        if User.objects.filter(email=email).exists():
+        normalized_email = email.lower()
+        if User.objects.filter(email__iexact=normalized_email).exists():
             raise forms.ValidationError("Email already registered")
         return email
 
