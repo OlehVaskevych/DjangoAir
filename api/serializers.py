@@ -5,8 +5,11 @@ from air import models
 from air.models import AirlineUser
 
 
-def generate_serializer(model):
-    meta_class = type("Meta", (), {"model": model, "fields": "__all__"})
+def generate_serializer(model, allowed_fields):
+    meta_class = type("Meta", (), {
+        "model": model,
+        "fields": allowed_fields,
+    })
     return type(
         f"{model.__name__}Serializer",
         (serializers.ModelSerializer,),
@@ -37,26 +40,23 @@ class MealSerializer(serializers.ModelSerializer):
         return [option.name for option in obj.dietary_options.all()]
 
 
-AirlineUserSerializer = generate_serializer(models.AirlineUser)
-BaggageSerializer = generate_serializer(models.Baggage)
-ComfortSerializer = generate_serializer(models.Comfort)
-AirplaneSerializer = generate_serializer(models.Airplane)
-FlightSerializer = generate_serializer(models.Flight)
-TicketSerializer = generate_serializer(models.Ticket)
-CheckInSerializer = generate_serializer(models.CheckIn)
-BoardingPassSerializer = generate_serializer(models.BoardingPass)
+AirlineUserSerializer = generate_serializer(models.AirlineUser, ["id", "username", "first_name", "last_name", "role", "email"])
+BaggageSerializer = generate_serializer(models.Baggage, "__all__")
+ComfortSerializer = generate_serializer(models.Comfort, "__all__")
+AirplaneSerializer = generate_serializer(models.Airplane, "__all__")
+FlightSerializer = generate_serializer(models.Flight, "__all__")
+TicketSerializer = generate_serializer(models.Ticket, "__all__")
+CheckInSerializer = generate_serializer(models.CheckIn, "__all__")
+BoardingPassSerializer = generate_serializer(models.BoardingPass, "__all__")
 
 
 class CurrentUserSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
-    role = serializers.SerializerMethodField()
+    role = serializers.CharField(source="role")
 
     class Meta:
         model = AirlineUser
         fields = ["id", "name", "email", "role"]
 
     def get_name(self, obj):
-        return f"{obj.first_name} {obj.last_name}"
-
-    def get_role(self, obj):
-        return obj.role
+        return obj.get_full_name()
