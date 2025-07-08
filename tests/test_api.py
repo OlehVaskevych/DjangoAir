@@ -1,22 +1,18 @@
 import json
 from ctypes import pythonapi
-
 from datetime import timedelta
-
-import pytest
 from unittest.mock import patch
 
-from django.urls import reverse
+import pytest
 from django.conf import settings
+from django.urls import reverse
 from django.utils import timezone
-
-from rest_framework.test import APIClient
 from rest_framework import status
+from rest_framework.test import APIClient
 
-from air.models import (
-    AirlineUser, Flight, Ticket, Meal, Baggage, Comfort,
-    TicketStatusChoices, CheckIn, BoardingPass
-)
+from air.models import (AirlineUser, Baggage, BoardingPass, CheckIn, Comfort,
+                        Flight, Meal, Ticket, TicketStatusChoices)
+
 
 @pytest.mark.django_db
 @patch("stripe.Webhook.construct_event")
@@ -25,9 +21,7 @@ def test_stripe_webhook_ticket_creation(mock_send_mail, mock_construct_event):
     client = APIClient()
 
     user = AirlineUser.objects.create_user(
-        username='testuser',
-        email='test@example.com',
-        password='securepassword'
+        username="testuser", email="test@example.com", password="securepassword"
     )
 
     flight = Flight.objects.create(
@@ -39,32 +33,34 @@ def test_stripe_webhook_ticket_creation(mock_send_mail, mock_construct_event):
         departure_time="2099-01-01T15:00:00Z",
         arrival_time="2099-01-01T19:00:00Z",
         status="upcoming",
-        base_price=100.0
+        base_price=100.0,
     )
 
     meal = Meal.objects.create(name="Vegan", price=10.0)
     baggage = Baggage.objects.create(name="Large Bag", weight=20, price=15.0)
-    comfort = Comfort.objects.create(name="Extra Legroom", description="Spacious seat", price=20.0)
+    comfort = Comfort.objects.create(
+        name="Extra Legroom", description="Spacious seat", price=20.0
+    )
 
     metadata = {
         "user_id": str(user.id),
         "flight_id": str(flight.id),
         "seats": json.dumps([{"id": "12A", "price": "150.0", "class": "economy"}]),
-        "services": json.dumps({
-            "meals": [{"id": meal.id}],
-            "baggage": [{"id": baggage.id}],
-            "comfort": [{"id": comfort.id}]
-        })
+        "services": json.dumps(
+            {
+                "meals": [{"id": meal.id}],
+                "baggage": [{"id": baggage.id}],
+                "comfort": [{"id": comfort.id}],
+            }
+        ),
     }
 
-    payload = json.dumps({
-        "type": "checkout.session.completed",
-        "data": {
-            "object": {
-                "metadata": metadata
-            }
+    payload = json.dumps(
+        {
+            "type": "checkout.session.completed",
+            "data": {"object": {"metadata": metadata}},
         }
-    })
+    )
 
     # Mock signature validation
     mock_construct_event.return_value = json.loads(payload)
@@ -74,7 +70,7 @@ def test_stripe_webhook_ticket_creation(mock_send_mail, mock_construct_event):
         url,
         data=payload,
         content_type="application/json",
-        HTTP_STRIPE_SIGNATURE="test_signature"
+        HTTP_STRIPE_SIGNATURE="test_signature",
     )
 
     # Assertions
@@ -92,12 +88,11 @@ def test_stripe_webhook_ticket_creation(mock_send_mail, mock_construct_event):
     # Перевірка надсилання email
     mock_send_mail.assert_called_once()
 
+
 @pytest.mark.django_db
 def test_cancel_ticket_success():
     user = AirlineUser.objects.create_user(
-        email='test@example.com',
-        password='password123',
-        username='testuser'
+        email="test@example.com", password="password123", username="testuser"
     )
 
     flight = Flight.objects.create(
@@ -108,7 +103,7 @@ def test_cancel_ticket_success():
         destination_code="LWO",
         departure_time="2030-01-01T12:00:00Z",
         arrival_time="2030-01-01T14:00:00Z",
-        base_price=100
+        base_price=100,
     )
 
     ticket = Ticket.objects.create(
@@ -119,7 +114,7 @@ def test_cancel_ticket_success():
         seat_class="Economy",
         status=TicketStatusChoices.UPCOMING,
         booking_reference="TESTREF123",
-        gate=5
+        gate=5,
     )
 
     client = APIClient()
@@ -136,9 +131,7 @@ def test_cancel_ticket_success():
 @pytest.mark.django_db
 def test_cancel_ticket_not_found():
     user = AirlineUser.objects.create_user(
-        email='test@example.com',
-        password='password123',
-        username='testuser'
+        email="test@example.com", password="password123", username="testuser"
     )
 
     client = APIClient()
@@ -154,9 +147,7 @@ def test_cancel_ticket_not_found():
 @pytest.mark.django_db
 def test_cancel_ticket_missing_ticket_id():
     user = AirlineUser.objects.create_user(
-        email='test@example.com',
-        password='password123',
-        username='testuser'
+        email="test@example.com", password="password123", username="testuser"
     )
 
     client = APIClient()
@@ -176,11 +167,14 @@ def test_cancel_ticket_unauthenticated():
     response = client.post(url, {"ticket_id": 1}, format="json")
     assert response.status_code == 401  # Unauthorized
 
+
 @pytest.mark.django_db
 def test_additional_services_api():
-    meal = Meal.objects.create(name="Vegan Meal", price=10.5, image_url='vegan.jpg')
+    meal = Meal.objects.create(name="Vegan Meal", price=10.5, image_url="vegan.jpg")
     baggage = Baggage.objects.create(name="Extra Baggage", weight=20, price=15)
-    comfort = Comfort.objects.create(name="Extra Legroom", description="More space", price=25)
+    comfort = Comfort.objects.create(
+        name="Extra Legroom", description="More space", price=25
+    )
 
     client = APIClient()
     url = reverse("additional_services")
@@ -195,19 +189,22 @@ def test_additional_services_api():
     assert "baggage" in data
     assert "comfort" in data
 
+
 @pytest.mark.django_db
 def test_user_tickets_view_unauthenticated():
     client = APIClient()
-    url = reverse('get_tickets')
+    url = reverse("get_tickets")
     response = client.get(url)
 
     assert response.status_code == 401
-    assert response.json()['detail'] == 'Authentication credentials were not provided.'
+    assert response.json()["detail"] == "Authentication credentials were not provided."
 
 
 @pytest.mark.django_db
 def test_user_tickets_view_authenticated():
-    user = AirlineUser.objects.create_user(username='testuser', email='test@example.com', password='password123')
+    user = AirlineUser.objects.create_user(
+        username="testuser", email="test@example.com", password="password123"
+    )
 
     # Створення об'єктів
     flight = Flight.objects.create(
@@ -234,7 +231,9 @@ def test_user_tickets_view_authenticated():
     # Додаткові сервіси
     meal = Meal.objects.create(name="Sandwich", price=10, image_url="img.jpg")
     baggage = Baggage.objects.create(name="Big Bag", weight=20, price=15)
-    comfort = Comfort.objects.create(name="Extra Legroom", description="More space", price=25)
+    comfort = Comfort.objects.create(
+        name="Extra Legroom", description="More space", price=25
+    )
 
     ticket.meals.add(meal)
     ticket.baggage.add(baggage)
@@ -243,7 +242,7 @@ def test_user_tickets_view_authenticated():
     # Аутентифікація
     client = APIClient()
     client.force_authenticate(user=user)
-    url = reverse('get_tickets')
+    url = reverse("get_tickets")
 
     # Act
     response = client.get(url)
@@ -262,13 +261,12 @@ def test_user_tickets_view_authenticated():
     assert "baggage" in ticket_data["additional_services"]
     assert "comforts" in ticket_data["additional_services"]
 
+
 @pytest.mark.django_db
 def test_current_user_view_authenticated():
     client = APIClient()
     user = AirlineUser.objects.create_user(
-        username="testuser",
-        email="test@example.com",
-        password="password123"
+        username="testuser", email="test@example.com", password="password123"
     )
     client.force_authenticate(user=user)
 
@@ -280,8 +278,9 @@ def test_current_user_view_authenticated():
     assert data["isAuthenticated"] is True
     assert data["user"]["id"] == user.id
     assert data["user"]["name"] == user.first_name + " " + user.last_name
-    assert data["user"]["email"] == 'test@example.com'
+    assert data["user"]["email"] == "test@example.com"
     assert data["user"]["role"] == user.role
+
 
 @pytest.mark.django_db
 def test_current_user_view_unauthenticated():
@@ -291,16 +290,87 @@ def test_current_user_view_unauthenticated():
 
     assert response.status_code == 401
 
+
 # Мапінг моделей до їх url names у роутингу, адаптуй під свій роутінг
 viewsets_info = [
-    ("airlineuser-list", {"model": AirlineUser, "serializer_fields": ["email", "username"], "create_data": {"email": "test1@example.com", "username": "user1", "password": "testpass123"}}),
-    ("meal-list", {"model": Meal, "serializer_fields": ["name"], "create_data": {"name": "Test Meal", "price": 10.0, "description": "Test Meal", "stripe_price_id": 'price_123'}}),
-    ("baggage-list", {"model": Baggage, "serializer_fields": ["name"], "create_data": {"name": "Small Bag", "weight": 5, "price": 15.0, "description": "Test Baggage", "stripe_price_id": 'price_123'}}),
-    ("comfort-list", {"model": Comfort, "serializer_fields": ["name"], "create_data": {"name": "Extra Legroom", "description": "More space", "price": 30.0, "stripe_price_id": 'price_123'}}),
-    ("ticket-list", {"model": Ticket, "serializer_fields": ["seat_number", "price"], "create_data": {"seat_number": "12A", "price": 100.0}}),
-    ("checkin-list", {"model": CheckIn, "serializer_fields": ["id"], "create_data": {"luggage_weight": 10, "created_at": timezone.now()}}),  # Потрібно доповнити дані, якщо є обов'язкові поля
-    ("boardingpass-list", {"model": BoardingPass, "serializer_fields": ["id"], "create_data": {'gate_number': 1}}),  # Аналогічно
+    (
+        "airlineuser-list",
+        {
+            "model": AirlineUser,
+            "serializer_fields": ["email", "username"],
+            "create_data": {
+                "email": "test1@example.com",
+                "username": "user1",
+                "password": "testpass123",
+            },
+        },
+    ),
+    (
+        "meal-list",
+        {
+            "model": Meal,
+            "serializer_fields": ["name"],
+            "create_data": {
+                "name": "Test Meal",
+                "price": 10.0,
+                "description": "Test Meal",
+                "stripe_price_id": "price_123",
+            },
+        },
+    ),
+    (
+        "baggage-list",
+        {
+            "model": Baggage,
+            "serializer_fields": ["name"],
+            "create_data": {
+                "name": "Small Bag",
+                "weight": 5,
+                "price": 15.0,
+                "description": "Test Baggage",
+                "stripe_price_id": "price_123",
+            },
+        },
+    ),
+    (
+        "comfort-list",
+        {
+            "model": Comfort,
+            "serializer_fields": ["name"],
+            "create_data": {
+                "name": "Extra Legroom",
+                "description": "More space",
+                "price": 30.0,
+                "stripe_price_id": "price_123",
+            },
+        },
+    ),
+    (
+        "ticket-list",
+        {
+            "model": Ticket,
+            "serializer_fields": ["seat_number", "price"],
+            "create_data": {"seat_number": "12A", "price": 100.0},
+        },
+    ),
+    (
+        "checkin-list",
+        {
+            "model": CheckIn,
+            "serializer_fields": ["id"],
+            "create_data": {"luggage_weight": 10, "created_at": timezone.now()},
+        },
+    ),  # Потрібно доповнити дані, якщо є обов'язкові поля
+    (
+        "boardingpass-list",
+        {
+            "model": BoardingPass,
+            "serializer_fields": ["id"],
+            "create_data": {"gate_number": 1},
+        },
+    ),  # Аналогічно
 ]
+
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("url_name, info", viewsets_info)
@@ -309,9 +379,7 @@ def test_viewset_list_and_create(url_name, info):
 
     # Створюємо базових користувача і політ (у разі потреби)
     user = AirlineUser.objects.create_user(
-        email='user@example.com',
-        password='password123',
-        username='testuser'
+        email="user@example.com", password="password123", username="testuser"
     )
 
     flight = Flight.objects.create(
@@ -322,7 +390,7 @@ def test_viewset_list_and_create(url_name, info):
         destination_code="LWO",
         departure_time=timezone.now() + timedelta(hours=2),
         arrival_time=timezone.now() + timedelta(hours=4),
-        base_price=100.0
+        base_price=100.0,
     )
 
     # GET list
@@ -348,7 +416,7 @@ def test_viewset_list_and_create(url_name, info):
             flight=flight,
             seat_class="Economy",
             booking_reference="ABC123",
-            gate=3
+            gate=3,
         )
         create_data["ticket"] = ticket.id
     elif model == BoardingPass:
@@ -359,22 +427,26 @@ def test_viewset_list_and_create(url_name, info):
             flight=flight,
             seat_class="Economy",
             booking_reference="XYZ789",
-            gate=4
+            gate=4,
         )
         create_data["ticket"] = ticket.id
 
     # Авторизація, якщо потрібно
     client.force_authenticate(user=user)
 
-    response = client.post(url, create_data, format='json')
+    response = client.post(url, create_data, format="json")
     print(f"{url_name} POST response:", response.json())
 
-    assert response.status_code in [status.HTTP_201_CREATED, status.HTTP_405_METHOD_NOT_ALLOWED]
+    assert response.status_code in [
+        status.HTTP_201_CREATED,
+        status.HTTP_405_METHOD_NOT_ALLOWED,
+    ]
 
     if response.status_code == status.HTTP_201_CREATED:
         data = response.json()
         for field in info["serializer_fields"]:
             assert field in data
+
 
 # Приклад для тестування деталізації (GET detail)
 @pytest.mark.django_db
@@ -386,7 +458,9 @@ def test_viewset_retrieve(url_name, info):
 
     # Динамічна підготовка залежностей
     if model == Ticket:
-        user = AirlineUser.objects.create_user(email="u@example.com", username="user", password="1234")
+        user = AirlineUser.objects.create_user(
+            email="u@example.com", username="user", password="1234"
+        )
         flight = Flight.objects.create(
             flight_number="F123",
             origin="Kyiv",
@@ -401,7 +475,9 @@ def test_viewset_retrieve(url_name, info):
         create_data["flight"] = flight
 
     elif model == CheckIn:
-        user = AirlineUser.objects.create_user(email="checkin@example.com", username="checkuser", password="1234")
+        user = AirlineUser.objects.create_user(
+            email="checkin@example.com", username="checkuser", password="1234"
+        )
         flight = Flight.objects.create(
             flight_number="CHK123",
             origin="A",
@@ -413,15 +489,14 @@ def test_viewset_retrieve(url_name, info):
             base_price=50.0,
         )
         ticket = Ticket.objects.create(
-            seat_number="22C",
-            price=100,
-            passenger=user,
-            flight=flight
+            seat_number="22C", price=100, passenger=user, flight=flight
         )
         create_data["ticket"] = ticket
 
     elif model == BoardingPass:
-        user = AirlineUser.objects.create_user(email="b@example.com", username="bpuser", password="1234")
+        user = AirlineUser.objects.create_user(
+            email="b@example.com", username="bpuser", password="1234"
+        )
         flight = Flight.objects.create(
             flight_number="BP123",
             origin="X",
@@ -433,10 +508,7 @@ def test_viewset_retrieve(url_name, info):
             base_price=70.0,
         )
         ticket = Ticket.objects.create(
-            seat_number="15A",
-            price=80,
-            passenger=user,
-            flight=flight
+            seat_number="15A", price=80, passenger=user, flight=flight
         )
         create_data["ticket"] = ticket
 

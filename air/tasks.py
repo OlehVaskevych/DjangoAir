@@ -1,6 +1,8 @@
 from celery import shared_task
 from django.utils import timezone
-from .models import Flight, FlightStatusChoices, TicketStatusChoices, Ticket
+
+from .models import Flight, FlightStatusChoices, Ticket, TicketStatusChoices
+
 
 @shared_task
 def update_flight_status():

@@ -1,22 +1,22 @@
 import json
-import stripe
-import string
 import random
+import string
 from datetime import timedelta
 
-from django.views.decorators.csrf import csrf_exempt
+import stripe
 from django.conf import settings
-from django.template.loader import render_to_string
 from django.core.mail import send_mail
+from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-
 from rest_framework import status, viewsets
-from rest_framework.authentication import TokenAuthentication, BasicAuthentication
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.authentication import (BasicAuthentication,
+                                           TokenAuthentication)
+from rest_framework.decorators import (api_view, authentication_classes,
+                                       permission_classes)
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
 
 from air.models import (AirlineUser, Airplane, Baggage, BoardingPass, CheckIn,
                         Comfort, Flight, Meal, Ticket, TicketStatusChoices)
@@ -29,7 +29,12 @@ from .serializers import (AirlineUserSerializer, AirplaneSerializer,
 
 
 def generate_view_sets(model, model_serializer):
-    return type(f"{model.__name__}ViewSet", (viewsets.ModelViewSet,), {'queryset': model.objects.all(), 'serializer_class': model_serializer})
+    return type(
+        f"{model.__name__}ViewSet",
+        (viewsets.ModelViewSet,),
+        {"queryset": model.objects.all(), "serializer_class": model_serializer},
+    )
+
 
 AirlineUsersViewSet = generate_view_sets(AirlineUser, AirlineUserSerializer)
 MealViewSet = generate_view_sets(Meal, MealSerializer)
@@ -38,6 +43,7 @@ ComfortViewSet = generate_view_sets(Comfort, ComfortSerializer)
 TicketViewSet = generate_view_sets(Ticket, TicketSerializer)
 CheckInViewSet = generate_view_sets(CheckIn, CheckInSerializer)
 BoardingPassViewSet = generate_view_sets(BoardingPass, BoardingPassSerializer)
+
 
 # Generates a booking reference like 'A1B2C3D4E5'
 def generate_booking_reference():
@@ -48,7 +54,8 @@ def generate_booking_reference():
     Returns:
     - str: A 10-character alphanumeric booking reference.
     """
-    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+    return "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
+
 
 # Function to retrieve the current user`s information
 class CurrentUserAPIView(APIView):
@@ -62,20 +69,26 @@ class CurrentUserAPIView(APIView):
     - JsonResponse with the user`s information if authenticated.
     - JsonResponse with 'isAuthenticated': False if the user is not authenticated.
     """
+
     authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         if request.user.is_authenticated:
             serializer = CurrentUserSerializer(request.user)
-            return Response({
-                'isAuthenticated': True,
-                'user': serializer.data,
-            })
-        return Response({
-            'isAuthenticated': False,
-            'user': None,
-        })
+            return Response(
+                {
+                    "isAuthenticated": True,
+                    "user": serializer.data,
+                }
+            )
+        return Response(
+            {
+                "isAuthenticated": False,
+                "user": None,
+            }
+        )
+
 
 # Returns a list of tickets for the currently authenticated user in JSON format
 class UserTicketsAPIView(APIView):
@@ -96,6 +109,7 @@ class UserTicketsAPIView(APIView):
     Returns:
         JsonResponse: A list of ticket data in JSON format.
     """
+
     authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -103,7 +117,7 @@ class UserTicketsAPIView(APIView):
         if not request.user.is_authenticated:
             return Response(
                 {"detail": "Authentication required."},
-                status=status.HTTP_401_UNAUTHORIZED
+                status=status.HTTP_401_UNAUTHORIZED,
             )
         """
         Retrieves all tickets belonging to the currently authenticated user and
@@ -123,67 +137,74 @@ class UserTicketsAPIView(APIView):
             JsonResponse: A list of ticket data in JSON format.
         """
         user_id = request.user.id
-        tickets = Ticket.objects.filter(passenger__id=user_id).select_related('flight')
+        tickets = Ticket.objects.filter(passenger__id=user_id).select_related("flight")
 
         data = []
         for ticket in tickets:
             flight = ticket.flight
 
-            data.append({
-                "id": ticket.id,
-                "destination": flight.destination,
-                "departureCity": flight.origin,  # можна розширити Flight для цього
-                "departureCode": flight.origin_code,  # або отримати з Airport моделі
-                "arrivalCode": flight.destination_code,
-                "date": flight.departure_time.date().isoformat(),
-                "departureTime": flight.departure_time.strftime("%H:%M"),
-                "arrivalTime": flight.arrival_time.strftime("%H:%M"),
-                "duration": str(flight.arrival_time - flight.departure_time),
-                "flightNumber": flight.flight_number,
-                "status": ticket.status,
-                "passengerName": f"{ticket.passenger.first_name} {ticket.passenger.last_name}",
-                "passengerId": f"P{ticket.passenger.id:08d}",  # умовний приклад
-                "bookingReference": f"BR{ticket.id:06d}",  # умовний приклад
-                "gate": ticket.gate,
-                "boardingTime": (flight.departure_time - timedelta(minutes=30)).strftime("%H:%M"),
-                "seats": [
-                    {
-                        "id": ticket.seat_number,
-                        "class": ticket.seat_class,
-                        "price": float(ticket.price),
-                    }
-                ],
-                "totalAmount": float(ticket.price),
-                "additional_services": {
-                    "meals": [
+            data.append(
+                {
+                    "id": ticket.id,
+                    "destination": flight.destination,
+                    "departureCity": flight.origin,  # можна розширити Flight для цього
+                    "departureCode": flight.origin_code,  # або отримати з Airport моделі
+                    "arrivalCode": flight.destination_code,
+                    "date": flight.departure_time.date().isoformat(),
+                    "departureTime": flight.departure_time.strftime("%H:%M"),
+                    "arrivalTime": flight.arrival_time.strftime("%H:%M"),
+                    "duration": str(flight.arrival_time - flight.departure_time),
+                    "flightNumber": flight.flight_number,
+                    "status": ticket.status,
+                    "passengerName": f"{ticket.passenger.first_name} {ticket.passenger.last_name}",
+                    "passengerId": f"P{ticket.passenger.id:08d}",  # умовний приклад
+                    "bookingReference": f"BR{ticket.id:06d}",  # умовний приклад
+                    "gate": ticket.gate,
+                    "boardingTime": (
+                        flight.departure_time - timedelta(minutes=30)
+                    ).strftime("%H:%M"),
+                    "seats": [
                         {
-                            "name": meal.name,
-                            "price": meal.price,
-                            "dietaryOptions": [opt.name for opt in meal.dietary_options.all()],
-                            "image": meal.image_url,
+                            "id": ticket.seat_number,
+                            "class": ticket.seat_class,
+                            "price": float(ticket.price),
                         }
-                        for meal in ticket.meals.all()
                     ],
-                    "baggage": [
-                        {
-                            "name": bag.name,
-                            "weight": bag.weight,
-                            "price": bag.price,
-                        }
-                        for bag in ticket.baggage.all()
-                    ],
-                    "comforts": [
-                        {
-                            "name": comfort.name,
-                            "description": comfort.description,
-                            "price": comfort.price,
-                        }
-                        for comfort in ticket.comforts.all()
-                    ],
+                    "totalAmount": float(ticket.price),
+                    "additional_services": {
+                        "meals": [
+                            {
+                                "name": meal.name,
+                                "price": meal.price,
+                                "dietaryOptions": [
+                                    opt.name for opt in meal.dietary_options.all()
+                                ],
+                                "image": meal.image_url,
+                            }
+                            for meal in ticket.meals.all()
+                        ],
+                        "baggage": [
+                            {
+                                "name": bag.name,
+                                "weight": bag.weight,
+                                "price": bag.price,
+                            }
+                            for bag in ticket.baggage.all()
+                        ],
+                        "comforts": [
+                            {
+                                "name": comfort.name,
+                                "description": comfort.description,
+                                "price": comfort.price,
+                            }
+                            for comfort in ticket.comforts.all()
+                        ],
+                    },
                 }
-            })
+            )
 
         return Response(data)
+
 
 class AdditionalServicesAPIView(APIView):
     @staticmethod
@@ -201,6 +222,7 @@ class AdditionalServicesAPIView(APIView):
 
         return Response(services_data)
 
+
 class CancelTicketAPIView(APIView):
     """
     Cancels a ticket by setting its status to CANCELED.
@@ -216,6 +238,7 @@ class CancelTicketAPIView(APIView):
         - 400 for invalid JSON or missing ticket_id.
         - 405 if the method is not POST.
     """
+
     authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -223,25 +246,29 @@ class CancelTicketAPIView(APIView):
         try:
             data = request.data
             print(data)
-            ticket_id = data.get('ticket_id')
+            ticket_id = data.get("ticket_id")
 
             if not ticket_id:
-                return Response({'success': False, 'error': 'Missing ticket_id.'}, status=400)
+                return Response(
+                    {"success": False, "error": "Missing ticket_id."}, status=400
+                )
 
             ticket = Ticket.objects.get(id=ticket_id)
             ticket.status = TicketStatusChoices.CANCELED
             ticket.save()
 
-            return Response({'status': 'success'})
+            return Response({"status": "success"})
 
         except Ticket.DoesNotExist:
-            return Response({'success': False, 'error': 'Ticket not found.'}, status=404)
+            return Response(
+                {"success": False, "error": "Ticket not found."}, status=404
+            )
         except json.JSONDecodeError:
-            return Response({'success': False, 'error': 'Invalid JSON.'}, status=400)
+            return Response({"success": False, "error": "Invalid JSON."}, status=400)
 
 
 # Handles Stripe webhook event when a payment is successfully completed
-@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_exempt, name="dispatch")
 @authentication_classes([])
 @permission_classes([])
 class StripeWebhookView(APIView):
@@ -263,52 +290,59 @@ class StripeWebhookView(APIView):
             - 200 OK on successful processing.
             - 400 Bad Request with appropriate error message if verification or data parsing fails.
     """
+
     @staticmethod
     def post(request, *args, **kwargs):
         payload = request.body
-        sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+        sig_header = request.META.get("HTTP_STRIPE_SIGNATURE")
         endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
 
         if sig_header is None:
             print("Missing stripe signature header.")
             return Response(
-                {
-                    'error': 'Missing stripe signature header.'
-                },
-                    status=status.HTTP_400_BAD_REQUEST
+                {"error": "Missing stripe signature header."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
-            event = stripe.Webhook.construct_event(
-                payload, sig_header, endpoint_secret
-            )
-
+            event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
 
         except ValueError as e:
             print(f"⚠️ Invalid payload: {e}")
-            return Response({"error": "Invalid payload"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Invalid payload"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         except stripe.error.SignatureVerificationError as e:
             print(f"⚠️ Invalid signature: {e}")
-            return Response({"error": "Invalid signature"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Invalid signature"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
-        if event['type'] == 'checkout.session.completed':
-            session = event['data']['object']
-            metadata = session.get('metadata', {})
+        if event["type"] == "checkout.session.completed":
+            session = event["data"]["object"]
+            metadata = session.get("metadata", {})
             print(metadata)
 
-            if 'seats' not in metadata:
+            if "seats" not in metadata:
                 print("⚠️ No seats found in metadata.")
-                return Response({"error": "No seats in metadata"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"error": "No seats in metadata"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             try:
-                seats = json.loads(metadata.get('seats', '[]'))
-                services = json.loads(metadata.get('services', '{}'))
+                seats = json.loads(metadata.get("seats", "[]"))
+                services = json.loads(metadata.get("services", "{}"))
             except json.JSONDecodeError as e:
                 print(f"⚠️ JSON Decode Error: {e}")
-                return Response({"error": "Invalid JSON"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"error": "Invalid JSON"}, status=status.HTTP_400_BAD_REQUEST
+                )
 
-            from .serializers import MealSerializer, BaggageSerializer, ComfortSerializer, TicketSerializer, AirplaneSerializer
+            from .serializers import (AirplaneSerializer, BaggageSerializer,
+                                      ComfortSerializer, MealSerializer,
+                                      TicketSerializer)
 
             meal_ids = [m["id"] for m in services.get("meals", [])]
             baggage_ids = [b["id"] for b in services.get("baggage", [])]
@@ -321,17 +355,19 @@ class StripeWebhookView(APIView):
             gate = 1 if comfort_objs.filter(id=1).exists() else random.randint(2, 6)
 
             try:
-                user = AirlineUser.objects.get(id=metadata['user_id'])
+                user = AirlineUser.objects.get(id=metadata["user_id"])
             except AirlineUser.DoesNotExist:
-                return Response({"error": "User not found"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"error": "User not found"}, status=status.HTTP_400_BAD_REQUEST
+                )
 
             for seat in seats:
                 ticket = Ticket.objects.create(
-                    seat_number=seat['id'],
-                    price=seat['price'],
-                    flight_id=metadata['flight_id'],
+                    seat_number=seat["id"],
+                    price=seat["price"],
+                    flight_id=metadata["flight_id"],
                     passenger_id=user.id,
-                    seat_class=seat['class'],
+                    seat_class=seat["class"],
                     booking_reference=generate_booking_reference(),
                     gate=gate,
                 )
@@ -348,10 +384,12 @@ class StripeWebhookView(APIView):
                     "ticket": ticket,
                     "formatted_data": {
                         "date": ticket.flight.departure_time.strftime("%d.%m.%Y"),
-                        "departure_time": ticket.flight.departure_time.strftime("%H:%M"),
+                        "departure_time": ticket.flight.departure_time.strftime(
+                            "%H:%M"
+                        ),
                         "arrival_time": ticket.flight.arrival_time.strftime("%H:%M"),
                         "boarding_time": boarding_time.strftime("%H:%M"),
-                    }
+                    },
                 }
 
                 message_html = render_to_string("ticket_email.html", context)

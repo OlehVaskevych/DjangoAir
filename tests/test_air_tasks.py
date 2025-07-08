@@ -1,29 +1,22 @@
-import pytest
-from django.utils import timezone
 from datetime import timedelta
 
+import pytest
+from django.utils import timezone
+
+from air.models import (AirlineUser, Flight, FlightStatusChoices, Ticket,
+                        TicketStatusChoices)
 from air.tasks import update_flight_status
-from air.models import (
-    Flight,
-    FlightStatusChoices,
-    TicketStatusChoices,
-    Ticket,
-    AirlineUser
-)
+
 
 @pytest.mark.django_db
 def test_update_flight_status():
     now = timezone.now()
 
     user1 = AirlineUser.objects.create(
-        username="user1",
-        email="user1@example.com",
-        password="password123"
+        username="user1", email="user1@example.com", password="password123"
     )
     user2 = AirlineUser.objects.create_user(
-        username='user2',
-        email='user2@example.com',
-        password='password2'
+        username="user2", email="user2@example.com", password="password2"
     )
 
     # Створюємо два польоти з унікальним flight_number
@@ -34,7 +27,7 @@ def test_update_flight_status():
         status=FlightStatusChoices.UPCOMING,
         base_price=100.0,
         origin="LAX",
-        destination="JFK"
+        destination="JFK",
     )
 
     flight_in_air = Flight.objects.create(
@@ -44,14 +37,14 @@ def test_update_flight_status():
         status=FlightStatusChoices.IN_AIR,
         base_price=150.0,
         origin="LAX",
-        destination="JFK"
+        destination="JFK",
     )
 
     # Створюємо квитки для користувачів, пов'язані з польотом
     ticket1 = Ticket.objects.create(
         flight=flight_upcoming,
         passenger=user1,
-        seat_number='12A',
+        seat_number="12A",
         status=TicketStatusChoices.UPCOMING,
         is_checked_in=True,
         is_boarded=True,
@@ -61,7 +54,7 @@ def test_update_flight_status():
     ticket2 = Ticket.objects.create(
         flight=flight_upcoming,
         passenger=user2,
-        seat_number='12B',
+        seat_number="12B",
         status=TicketStatusChoices.UPCOMING,
         is_checked_in=False,
         is_boarded=False,
@@ -80,5 +73,7 @@ def test_update_flight_status():
     ticket1.refresh_from_db()
     ticket2.refresh_from_db()
 
-    assert ticket1.status == TicketStatusChoices.USED  # бо is_checked_in=True і is_boarded=True
+    assert (
+        ticket1.status == TicketStatusChoices.USED
+    )  # бо is_checked_in=True і is_boarded=True
     assert ticket2.status == TicketStatusChoices.LATE  # бо не пройшли чек-ін і посадку

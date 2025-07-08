@@ -1,6 +1,6 @@
 from pathlib import Path
+
 import environ
-import os
 
 env = environ.Env(
     DEBUG=(bool, False),
@@ -11,12 +11,9 @@ environ.Env.read_env()
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 INSTALLED_APPS = [
-
     "django_celery_beat",
-
     "admin_interface",
     "colorfield",
-
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -24,17 +21,14 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "air",
-
-    'allauth',
-	'allauth.account',
-	'allauth.socialaccount',
-	'allauth.socialaccount.providers.google',
-
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
     "rest_framework",
     "api",
     "drf_spectacular",
-
-    "rest_framework_simplejwt"
+    "rest_framework_simplejwt",
 ]
 
 MIDDLEWARE = [
@@ -46,7 +40,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
-    'django.middleware.csrf.CsrfViewMiddleware',
 ]
 
 ROOT_URLCONF = "DjangoAir.urls"
@@ -54,8 +47,7 @@ ROOT_URLCONF = "DjangoAir.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / 'templates']
-        ,
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -85,16 +77,16 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    'air.backends.EmailBackend',
-    'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
+    "air.backends.EmailBackend",
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.SessionAuthentication",
     ),
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 LANGUAGE_CODE = "en-us"
@@ -112,29 +104,29 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-AUTH_USER_MODEL = 'air.AirlineUser'
+AUTH_USER_MODEL = "air.AirlineUser"
 
 SOCIALACCOUNT_PROVIDERS = {
-   	 'google': {
-       	 'APP': {
-            'client_id': env('CLIENT_ID'),
-            'secret': env('CLIENT_SECRET'),
-      	  },
-      	  'SCOPE': [
-            'profile',
-            'email',
-          ],
-       	  'AUTH_PARAMS': {'access_type': 'online'},
-          'METHOD': 'oauth2',
-          'VERIFIED_EMAIL': True,
-    	},
+    "google": {
+        "APP": {
+            "client_id": env("CLIENT_ID"),
+            "secret": env("CLIENT_SECRET"),
+        },
+        "SCOPE": [
+            "profile",
+            "email",
+        ],
+        "AUTH_PARAMS": {"access_type": "online"},
+        "METHOD": "oauth2",
+        "VERIFIED_EMAIL": True,
+    },
 }
 
-CELERY_TIMEZONE = 'Europe/Kyiv'
+CELERY_TIMEZONE = "Europe/Kyiv"
 CELERY_ENABLE_UTC = True
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
-STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY')
-STRIPE_PUBLISHABLE_KEY = env('STRIPE_PUBLISHABLE_KEY')
-STRIPE_WEBHOOK_SECRET = env('STRIPE_WEBHOOK_SECRET')
-STRIPE_API_KEY = env('STRIPE_API_KEY')
+STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY")
+STRIPE_PUBLISHABLE_KEY = env("STRIPE_PUBLISHABLE_KEY")
+STRIPE_WEBHOOK_SECRET = env("STRIPE_WEBHOOK_SECRET")
+STRIPE_API_KEY = env("STRIPE_API_KEY")

@@ -1,33 +1,25 @@
-import io
 import json
 import random
 import string
 from collections import defaultdict
-from datetime import datetime, timedelta
 
 import stripe
 from dateutil import parser
+from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
-from django.core.mail import send_mail
 from django.forms.utils import ErrorDict
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import render
-from django.template.loader import render_to_string
-from django.utils.timezone import localdate
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.views.decorators.csrf import csrf_protect
 
 from .forms import LoginForm, RegisterForm
-from .models import (AirlineUser, Baggage, BoardingPass, Comfort, Flight, Meal,
-                     Ticket, TicketStatusChoices)
-
-from django.conf import settings
+from .models import Flight, Ticket, TicketStatusChoices
 
 stripe.api_key = settings.STRIPE_API_KEY
 
-print(stripe.api_key)
 
 # Generates a booking reference like 'A1B2C3D4E5'
 def generate_booking_reference():
@@ -38,7 +30,8 @@ def generate_booking_reference():
     Returns:
     - str: A 10-character alphanumeric booking reference.
     """
-    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+    return "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
+
 
 # Formats Django form or serializer errors into a plain dictionary
 def format_errors(errors: ErrorDict) -> dict:
@@ -55,6 +48,7 @@ def format_errors(errors: ErrorDict) -> dict:
     for field, messages in errors.items():
         formatted[field] = [str(msg) for msg in messages]
     return formatted
+
 
 # Generates a unique username by appending a number if needed
 def generate_unique_username(base_username):
@@ -76,6 +70,7 @@ def generate_unique_username(base_username):
         counter += 1
     return username
 
+
 # Formats seat data into a readable string like "12A (Economy), 14B (Business)"
 def formatted_seats(seats_data):
     """
@@ -91,7 +86,8 @@ def formatted_seats(seats_data):
               Example: "12A (Economy), 14B (Business)"
     """
     seats = [f"{seat['id']} ({seat['class'].capitalize()})" for seat in seats_data]
-    return ', '.join(seats)
+    return ", ".join(seats)
+
 
 # Formats ISO flight time string into "DD.MM.YYYY HH:MM" format
 def formatted_flight_time(flight_time):
@@ -105,12 +101,9 @@ def formatted_flight_time(flight_time):
         str: A string representing the date and time in the format "DD.MM.YYYY HH:MM".
     """
     date_obj = parser.isoparse(flight_time)
-    formatted_date = date_obj.strftime('%d.%m.%Y')
-    formatted_time = date_obj.strftime('%H:%M')
-    return f'{formatted_date} {formatted_time}'
-
-
-
+    formatted_date = date_obj.strftime("%d.%m.%Y")
+    formatted_time = date_obj.strftime("%H:%M")
+    return f"{formatted_date} {formatted_time}"
 
 
 # Home page with the list of flights
@@ -124,7 +117,7 @@ def index(request):
     Returns:
     - render: Renders the 'home.html' template with flight data and cities
     """
-    flights = Flight.objects.all().order_by('destination', 'departure_time')
+    flights = Flight.objects.all().order_by("destination", "departure_time")
     flight_data = defaultdict(list)
     cities = set()
 
@@ -140,34 +133,47 @@ def index(request):
         duration_td = flight.arrival_time - flight.departure_time
         hours, remainder = divmod(duration_td.seconds, 3600)
         minutes = remainder // 60
-        duration_str = f'{hours}h {minutes}m'
+        duration_str = f"{hours}h {minutes}m"
 
-        seats_taken = list(Ticket.objects.filter(flight_id=flight.id, status=TicketStatusChoices.UPCOMING).order_by('seat_number').values_list('seat_number', flat=True))
+        seats_taken = list(
+            Ticket.objects.filter(
+                flight_id=flight.id, status=TicketStatusChoices.UPCOMING
+            )
+            .order_by("seat_number")
+            .values_list("seat_number", flat=True)
+        )
 
-        flight_data[route].append({
-            'date': flight.departure_time.isoformat(),
-            'flight_id': flight.id,
-            'time': flight.departure_time.strftime('%d.%m.%Y at %H:%M'),
-            'airline': '',
-            'aircraft': '',
-            'gate': '',
-            'terminal': '',
-            'duration': duration_str,
-            'price': float(flight.base_price),
-            'seats_total': seats_total,
-            'seats_available': seats_available,
-            'taken': seats_taken,
-        })
+        flight_data[route].append(
+            {
+                "date": flight.departure_time.isoformat(),
+                "flight_id": flight.id,
+                "time": flight.departure_time.strftime("%d.%m.%Y at %H:%M"),
+                "airline": "",
+                "aircraft": "",
+                "gate": "",
+                "terminal": "",
+                "duration": duration_str,
+                "price": float(flight.base_price),
+                "seats_total": seats_total,
+                "seats_available": seats_available,
+                "taken": seats_taken,
+            }
+        )
 
-    return render(request, 'home.html', {
-        'flight_dates': dict(flight_data),
-        'unique_cities': sorted(cities),
-    })
+    return render(
+        request,
+        "home.html",
+        {
+            "flight_dates": dict(flight_data),
+            "unique_cities": sorted(cities),
+        },
+    )
 
-@login_required(login_url='/')
+
+@login_required(login_url="/")
 def bookings(request):
     if request.user.is_authenticated:
-        return render(request, 'bookings.html')
+        return render(request, "bookings.html")
 
 
 # Login view to handle user login
@@ -182,55 +188,61 @@ def login(request):
     Returns:
     - JsonResponse with boolean success or failure, and with error message if needed.
     """
-    if request.method == 'POST':
+    if request.method == "POST":
         form = LoginForm(request.POST)
         if form.is_valid():
-            email = form.cleaned_data['email'].lower()
-            password = form.cleaned_data['password']
+            email = form.cleaned_data["email"].lower()
+            password = form.cleaned_data["password"]
             user = authenticate(request, email=email, password=password)
             if user:
                 auth_login(request, user)
-                return JsonResponse({
-                    'success': True,
-                    'user': {
-                        'id': user.id,
-                        'name': f'{user.first_name} {user.last_name}',
-                        'email': user.email,
+                return JsonResponse(
+                    {
+                        "success": True,
+                        "user": {
+                            "id": user.id,
+                            "name": f"{user.first_name} {user.last_name}",
+                            "email": user.email,
+                        },
                     }
-                })
+                )
             else:
-                return JsonResponse({
-                    'success': False,
-                    'errors': {'general': 'Невірний email або пароль'}
-                })
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "errors": {"general": "Невірний email або пароль"},
+                    }
+                )
         else:
             # Сконвертувати form.errors до простого словника
             errors = {field: error[0] for field, error in form.errors.items()}
-            return JsonResponse({'success': False, 'errors': errors})
+            return JsonResponse({"success": False, "errors": errors})
 
-    return JsonResponse({'success': False, 'errors': {'general': 'Login failed. Invalid method.'}})
+    return JsonResponse(
+        {"success": False, "errors": {"general": "Login failed. Invalid method."}}
+    )
 
 
 @csrf_protect
 def register(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = RegisterForm(request.POST)
         if form.is_valid():
-            email = form.cleaned_data['email'].lower()
-            password = form.cleaned_data['password']
+            email = form.cleaned_data["email"].lower()
+            password = form.cleaned_data["password"]
 
             # Перевіряємо унікальність email
             User = get_user_model()
             if User.objects.filter(email=email).exists():
-                return JsonResponse({
-                    'success': False,
-                    'errors': {
-                        'email': 'Користувач з таким email вже існує.'
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "errors": {"email": "Користувач з таким email вже існує."},
                     }
-                })
+                )
 
             # Створюємо базове ім’я користувача
-            base_username = email.split('@')[0]
+            base_username = email.split("@")[0]
 
             # Створюємо користувача
             user = form.save(commit=False)
@@ -246,32 +258,37 @@ def register(request):
             # Аутентифікація
             user = authenticate(request, email=email, password=password)
             if user:
-                user.backend = 'air.backends.EmailBackend'
+                user.backend = "air.backends.EmailBackend"
                 auth_login(request, user)
 
-                return JsonResponse({
-                    'success': True,
-                    'user': {
-                        'id': user.id,
-                        'email': user.email,
-                        'name': f'{user.first_name} {user.last_name}',
-                    }
-                }, status=200)
+                return JsonResponse(
+                    {
+                        "success": True,
+                        "user": {
+                            "id": user.id,
+                            "email": user.email,
+                            "name": f"{user.first_name} {user.last_name}",
+                        },
+                    },
+                    status=200,
+                )
             else:
-                return JsonResponse({
-                    'success': False,
-                    'error_message': 'Authentication failed after registration.'
-                }, status=400)
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "error_message": "Authentication failed after registration.",
+                    },
+                    status=400,
+                )
         else:
-            return JsonResponse({
-                'success': False,
-                'errors': format_errors(form.errors)
-            }, status=400)
+            return JsonResponse(
+                {"success": False, "errors": format_errors(form.errors)}, status=400
+            )
 
-    return JsonResponse({
-        'success': False,
-        'error_message': 'Register failed. Invalid method.'
-    }, status=400)
+    return JsonResponse(
+        {"success": False, "error_message": "Register failed. Invalid method."},
+        status=400,
+    )
 
 
 # LogOut view to handle user logout
@@ -286,10 +303,12 @@ def logout(request):
     Returns:
     - JsonResponse with boolean success or failure, and error message if needed.
     """
-    if request.method == 'POST':
+    if request.method == "POST":
         auth_logout(request)
-        return JsonResponse({'success': True})
-    return JsonResponse({'success': False, 'error_message': 'Logout failed. Invalid method.'})
+        return JsonResponse({"success": True})
+    return JsonResponse(
+        {"success": False, "error_message": "Logout failed. Invalid method."}
+    )
 
 
 # Create checkout session for Stripe payment
@@ -305,7 +324,7 @@ def create_checkout_session(request):
     - JsonResponse with the checkout session URL if successful.
     - JsonResponse with an error message if an exception occurred.
     """
-    if request.method == 'POST':
+    if request.method == "POST":
         user = request.user
 
         try:
@@ -313,38 +332,41 @@ def create_checkout_session(request):
 
             line_items = []
 
-            for seat in data['selectedSeats']:
-                line_items.append({
-                    'price': seat['priceId'],
-                    'quantity': 1,
-                })
+            for seat in data["selectedSeats"]:
+                line_items.append(
+                    {
+                        "price": seat["priceId"],
+                        "quantity": 1,
+                    }
+                )
 
-            selected_services = data.get('selectedServices', {})
-            for service_type in ['meals', 'baggage', 'comfort']:
+            selected_services = data.get("selectedServices", {})
+            for service_type in ["meals", "baggage", "comfort"]:
                 for service in selected_services.get(service_type, []):
-                    line_items.append({
-                        'price': service['priceId'],
-                        'quantity': 1,
-                    })
+                    line_items.append(
+                        {
+                            "price": service["priceId"],
+                            "quantity": 1,
+                        }
+                    )
 
             session = stripe.checkout.Session.create(
-                payment_method_types=['card'],
+                payment_method_types=["card"],
                 line_items=line_items,
-                mode='payment',
+                mode="payment",
                 customer_email=user.email,
                 metadata={
-                    'user_id': user.id,
-                    'flight_id': data['flightId'],
-                    'seats': json.dumps(data['selectedSeats']),
-                    'services': json.dumps(data.get('selectedServices', {})),
+                    "user_id": user.id,
+                    "flight_id": data["flightId"],
+                    "seats": json.dumps(data["selectedSeats"]),
+                    "services": json.dumps(data.get("selectedServices", {})),
                 },
-                success_url='http://localhost:8000/bookings/',
-                cancel_url='http://localhost:8000/',
+                success_url="http://localhost:8000/bookings/",
+                cancel_url="http://localhost:8000/",
             )
 
-            return JsonResponse({'url': session.url})
+            return JsonResponse({"url": session.url})
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            return JsonResponse({"error": str(e)}, status=500)
 
-    return JsonResponse({'error': 'Invalid request method'}, status=400)
-
+    return JsonResponse({"error": "Invalid request method"}, status=400)

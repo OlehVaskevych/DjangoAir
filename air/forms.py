@@ -5,9 +5,11 @@ from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
+
 class LoginForm(forms.Form):
     email = forms.EmailField()
     password = forms.CharField(widget=forms.PasswordInput)
+
 
 class RegisterForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
@@ -15,7 +17,7 @@ class RegisterForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email']
+        fields = ["first_name", "last_name", "email"]
 
     def clean_email(self):
         """Ensure email is unique."""
@@ -41,7 +43,7 @@ class RegisterForm(forms.ModelForm):
                 validate_password(password)
             except ValidationError as e:
                 # Add validation errors to the 'password' field
-                self.add_error('password', e)
+                self.add_error("password", e)
 
         return cleaned_data
 

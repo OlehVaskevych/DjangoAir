@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('air', '0024_alter_ticket_gate'),
+        ("air", "0024_alter_ticket_gate"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='ticket',
-            name='gate',
-            field=models.IntegerField(default=4, help_text='Gate of the ticket', verbose_name='Gate'),
+            model_name="ticket",
+            name="gate",
+            field=models.IntegerField(
+                default=4, help_text="Gate of the ticket", verbose_name="Gate"
+            ),
         ),
     ]
