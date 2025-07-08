@@ -1,13 +1,9 @@
-import random
 import string
 
 from django.contrib.auth.models import AbstractUser
-from django.db import models
+from django.db import models, transaction
 
-
-def generate_booking_reference():
-    # Генерація випадкового рядка з букв і цифр довжиною 10 символів
-    return "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
+from .utils import generate_unique_booking_reference, generate_booking_reference, get_random_gate
 
 
 class DietaryOption(models.Model):
@@ -57,19 +53,6 @@ class AirlineUser(AbstractUser):
         verbose_name="User Role",
         help_text="Defines the user role in the airline system",
     )
-
-    def save(self, *args, **kwargs):
-        if self.role in [
-            AirlineUser.Role.SUPERVISOR,
-            AirlineUser.Role.GATE_MANAGER,
-            AirlineUser.Role.CHECKIN_MANAGER,
-        ]:
-            self.is_staff = True
-            self.is_superuser = self.role == AirlineUser.Role.SUPERVISOR
-        else:
-            self.is_staff = False
-            self.is_superuser = False
-        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Airline User"
@@ -294,7 +277,7 @@ class Ticket(models.Model):
         help_text="Seat class of the ticket",
     )
     gate = models.IntegerField(
-        default=random.randint(2, 6),
+        default=get_random_gate,
         blank=False,
         null=False,
         verbose_name="Gate",
@@ -358,6 +341,11 @@ class Ticket(models.Model):
         verbose_name="Status",
         help_text="Status of the ticket",
     )
+    
+    def save(self, *args, **kwargs):
+        if not self.booking_reference:
+            self.booking_reference = generate_unique_booking_reference()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.booking_reference} | {self.passenger.username} | {self.flight.flight_number}"
@@ -386,12 +374,6 @@ class CheckIn(models.Model):
 
     def __str__(self):
         return f"Check-in for {self.ticket.booking_reference}"
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        self.ticket.is_checked_in = True
-        self.ticket.status = TicketStatusChoices.CHECKED_IN
-        self.ticket.save(update_fields=["is_checked_in", "status"])
 
     class Meta:
         verbose_name = "Check-in"
@@ -423,12 +405,6 @@ class BoardingPass(models.Model):
         return (
             f"Boarding Pass {self.ticket.booking_reference} @ Gate {self.gate_number}"
         )
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        self.ticket.is_boarded = True
-        self.ticket.status = TicketStatusChoices.BOARDED
-        self.ticket.save(update_fields=["is_boarded", "status"])
 
     class Meta:
         verbose_name = "Boarding Pass"
