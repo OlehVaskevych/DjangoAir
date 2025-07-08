@@ -69,7 +69,7 @@ class Meal(models.Model):
         verbose_name="Meal description",
         help_text="Description of the meal",
     )
-    price = models.FloatField(
+    price = models.DecimalField(
         verbose_name="Meal price",
         help_text="Price of the meal",
     )
@@ -106,7 +106,7 @@ class Baggage(models.Model):
         verbose_name="Baggage description",
         help_text="Description of the baggage",
     )
-    price = models.FloatField(
+    price = models.DecimalField(
         verbose_name="Baggage price",
         help_text="Price of the baggage",
     )
@@ -138,7 +138,7 @@ class Comfort(models.Model):
         verbose_name="Comfort option description",
         help_text="Description of the comfort option",
     )
-    price = models.FloatField(
+    price = models.DecimalField(
         verbose_name="Comfort option price",
         help_text="Price of the comfort option",
     )
