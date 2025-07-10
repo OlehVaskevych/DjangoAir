@@ -389,3 +389,6 @@ def create_checkout_session(request):
                 "non_field_error": str(e)
             }
         }, status=500)
+
+def health_check(request):
+    return JsonResponse({"success": True})

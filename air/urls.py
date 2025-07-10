@@ -19,4 +19,7 @@ urlpatterns = [
     path("auth/logout/", views.logout, name="logout"),
     path("auth/register/", views.register, name="register"),
     path("auth/services/", include("allauth.urls")),
+
+
+    path("health/", views.health_check, name="health_check"),
 ]
