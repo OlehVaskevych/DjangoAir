@@ -1,0 +1,15 @@
+{% extends 'master.html' %}
+
+{% block title %}My Bookings{% endblock %}
+
+{% load static %}
+
+{% block body %}
+    <div id="bookings"></div>
+
+    <script src="{% static 'bundle.js' %}"></script>
+
+    <script>
+        window.csrfToken = '{{ csrf_token }}'
+    </script>
+{% endblock %}
