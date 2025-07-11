@@ -1,4 +1,7 @@
 #!/bin/sh
 
-echo "Gunicorn starts..."
-exec gunicorn --workers=4 --threads=2 --bind=0.0.0.0:8000 DjangoAir.wsgi:application
+echo "📦 Збираємо статику..."
+python manage.py collectstatic --noinput
+
+echo "🚀 Запускаємо Gunicorn..."
+gunicorn DjangoAir.wsgi:application --bind 0.0.0.0:8000
