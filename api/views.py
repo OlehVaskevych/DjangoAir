@@ -11,7 +11,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status, viewsets
 from rest_framework.authentication import (BasicAuthentication,
-                                           TokenAuthentication)
+                                           TokenAuthentication, SessionAuthentication)
 from rest_framework.decorators import (api_view, authentication_classes,
                                        permission_classes)
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -70,7 +70,7 @@ class CurrentUserAPIView(APIView):
     - JsonResponse with 'isAuthenticated': False if the user is not authenticated.
     """
 
-    authentication_classes = [BasicAuthentication]
+    authentication_classes = [SessionAuthentication]
     permission_classes = [AllowAny]
 
     def get(self, request):
@@ -110,7 +110,7 @@ class UserTicketsAPIView(APIView):
         JsonResponse: A list of ticket data in JSON format.
     """
 
-    authentication_classes = [BasicAuthentication]
+    authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -239,7 +239,7 @@ class CancelTicketAPIView(APIView):
         - 405 if the method is not POST.
     """
 
-    authentication_classes = [BasicAuthentication]
+    authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):

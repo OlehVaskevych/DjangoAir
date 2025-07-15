@@ -52,7 +52,7 @@ BoardingPassSerializer = generate_serializer(models.BoardingPass, "__all__")
 
 class CurrentUserSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
-    role = serializers.CharField(source="role")
+    role = serializers.CharField()
 
     class Meta:
         model = AirlineUser
