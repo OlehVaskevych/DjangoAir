@@ -1,6 +1,7 @@
 import random
 from faker import Faker
 from django.utils import timezone
+from decimal import Decimal
 from datetime import timedelta
 from air.models import *
 
@@ -35,8 +36,21 @@ def populate():
         )
         passengers.append(user)
 
+    user = AirlineUser.objects.create_user(
+        username='Supervisor',
+        password='secretpassword',
+        email=fake.email(),
+        role=AirlineUser.Role.SUPERVISOR,
+    )
+
     # Створюємо літак
-    airplane = Airplane.objects.create(name="Boeing 737", seat_capacity=150)
+    airplane = Airplane.objects.create(
+        name="Boeing 737",
+        seat_capacity=150,
+        economy_seats=120,
+        business_seats=20,
+        first_class_seats=10,
+    )
 
     flights = []
     for _ in range(3):
@@ -51,7 +65,7 @@ def populate():
             destination_code=fake.country_code(),
             departure_time=departure,
             arrival_time=arrival,
-            base_price=random.uniform(100, 500),
+            base_price=Decimal(str(random.uniform(100, 500))),
             airplane=airplane,
         )
         flights.append(flight)
@@ -153,8 +167,7 @@ def populate():
             flight=flight,
             seat_number=f"{random.randint(1, 30)}{random.choice('ABCDEF')}",
             seat_class=random.choice(SeatClassChoices.values),
-            price=flight.base_price + random.uniform(20, 100),
-            booking_reference=generate_booking_reference()
+            price=flight.base_price + Decimal(str(random.uniform(20, 100))),
         )
         ticket.meals.set(random.sample(meals, k=random.randint(0, 2)))
         ticket.baggage.set(random.sample(baggage_options, k=random.randint(0, 2)))
@@ -168,7 +181,7 @@ def populate():
             BoardingPass.objects.create(
                 ticket=ticket,
                 gate_number=str(random.randint(1, 10)),
-                boarding_time=timezone.now() + timedelta(minutes=random.randint(10, 60))
+                boarding_time = flight.departure_time - timedelta(minutes=random.randint(30, 90))
             )
 
     print("Database populated.")

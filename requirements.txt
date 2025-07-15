@@ -16,3 +16,4 @@ cryptography
 gunicorn
 pytest~=8.4.1
 sentry-sdk~=2.32.0
+whitenoise

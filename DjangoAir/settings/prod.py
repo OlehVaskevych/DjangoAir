@@ -1,6 +1,3 @@
-import sentry_sdk
-from sentry_sdk.integrations.django import DjangoIntegration
-
 from .base import *
 
 DEBUG = env.bool("DEBUG", default=False)
@@ -71,6 +68,9 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_HSTS_SECONDS = 31536000  # 1 рік
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
+
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 sentry_sdk.init(
     dsn="https://f0d105766eb304ecd087d64bcda3fe49@o4509642215915520.ingest.de.sentry.io/4509642216964176",
