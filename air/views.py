@@ -372,8 +372,8 @@ def create_checkout_session(request):
                 "seats": json.dumps(selected_seats),
                 "services": json.dumps(selected_services),
             },
-            success_url="https://localhost/bookings/",
-            cancel_url="https://localhost/",
+            success_url="https://djangoair-production.up.railway.app/bookings/",
+            cancel_url="hhttps://djangoair-production.up.railway.app/",
         )
 
         return JsonResponse({
