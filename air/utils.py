@@ -3,7 +3,7 @@ import string
 import math
 
 SEAT_CLASS_STRIPE_IDS = {
-    "economy": "price_1RP0yYQMzydK9SUprJfIiJw",
+    "economy": "price_1RP0yYQMzydK9SUprJfIiJYw",
     "business": "price_1RP0yyQMzydK9SUpQVDc8Xlz",
     "first": "price_1RP0zFQMzydK9SUptZsV3qKC",
 }

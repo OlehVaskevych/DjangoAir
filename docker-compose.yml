@@ -22,9 +22,10 @@ services:
 
   stripe-listen:
     image: stripe/stripe-cli
-    command: listen --forward-to http://web:8000/api/succeed_payment/
+    command: listen --forward-to http://nginx/api/succeed_payment/ --skip-verify
     depends_on:
       - web
+      - nginx
     environment:
       STRIPE_API_KEY: sk_test_51RKHskQMzydK9SUpQXdCjoxpN6Dsq0acLCIdBqWECXIS6GRTKABCbevjZdHdAmPTT0JzuDiU89Zy52BxxJaOyPy300L1bau57i
     networks:

@@ -486,9 +486,6 @@ import { emitter, EventTypes } from "@/scripts/eventBus";
 const UNIQUE_CITIES_FROM_SERVER = window.UNIQUE_CITIES_FROM_SERVER || [];
 const FLIGHT_DATES_FROM_SERVER = window.FLIGHT_DATES_FROM_SERVER || {};
 
-console.log(UNIQUE_CITIES_FROM_SERVER);
-console.log(FLIGHT_DATES_FROM_SERVER);
-
 export default {
   components: { AuthModels, AdditionalServicesSection },
 
@@ -861,7 +858,7 @@ export default {
      */
     getSeatPrice(seatClass) {
       switch (seatClass) {
-        case 'first-class':
+        case 'first':
           return this.seatPrices.first;
         case 'business':
           return this.seatPrices.business;
@@ -880,12 +877,12 @@ export default {
      */
     getSeatClassName(seatClass) {
       switch (seatClass) {
-        case 'first-class':
+        case 'first':
           return 'First Class';
         case 'business':
           return 'Business Class';
         case 'economy':
-          return 'Economy';
+          return 'Economy Class';
         default:
           return 'Unknown Class';
       }
@@ -999,10 +996,8 @@ export default {
      * @returns {Array} Оброблені секції місць
      */
     processSeatMapFromServer() {
-      console.log('Processing seat map from server:', this.seatMap);
 
       if (!this.seatMap || this.seatMap.length === 0) {
-        console.log('No seat map data, using static sections');
         return this.seatSections; // fallback до статичної карти
       }
 
@@ -1035,9 +1030,6 @@ export default {
       // Зберігаємо мапу рядів для використання в template
       this.rowSeatsMap = rowSeatsMap;
 
-      console.log('Seats grouped by class:', seatsByClass);
-      console.log('Row seats map:', rowSeatsMap);
-
       // Створюємо секції на основі даних з сервера
       const sections = [];
 
@@ -1052,7 +1044,6 @@ export default {
             rows,
             priceId
           });
-          console.log(`Added ${name} section with rows:`, rows);
         }
       };
 
@@ -1060,7 +1051,6 @@ export default {
       buildSection('business', 'Business Class', 'business-class-label', 'price_1RP0yyQMzydK9SUpQVDc8Xlz');
       buildSection('economy', 'Economy', 'economy-label', 'price_1RP0yYQMzydK9SUprJfIiJYw');
 
-      console.log('Final processed sections:', sections);
       return sections.length > 0 ? sections : this.seatSections;
     },
 
@@ -1068,7 +1058,6 @@ export default {
     async fetchSeatMap(flightId) {
       if (!flightId) return;
 
-      console.log(`Fetching seat map for flight ID: ${flightId}`);
       this.isLoadingSeatMap = true;
       this.seatMapError = null;
 
@@ -1078,8 +1067,6 @@ export default {
 
         const data = await response.json();
         this.seatMap = data.seatMap || [];
-        console.log('Seat map loaded successfully:', this.seatMap);
-        console.log('Seat map length:', this.seatMap.length);
 
         // Оновлюємо зайняті місця на основі нових даних з сервера
         const allOccupiedSeats = [];
@@ -1089,12 +1076,9 @@ export default {
           }
         });
         this.occupiedSeats = allOccupiedSeats;
-        console.log('Occupied seats updated:', this.occupiedSeats);
 
         // Форсуємо оновлення computed властивостей
         this.$nextTick(() => {
-          console.log('isSeatMapReady after loading:', this.isSeatMapReady);
-          console.log('displaySeatSections after loading:', this.displaySeatSections);
         });
 
       } catch (error) {
@@ -1103,7 +1087,6 @@ export default {
         this.seatMap = []; // Очищуємо карту при помилці
       } finally {
         this.isLoadingSeatMap = false;
-        console.log('Seat map loading finished. isLoadingSeatMap:', this.isLoadingSeatMap);
       }
     },
 
@@ -1128,20 +1111,14 @@ export default {
         return;
       }
 
-      console.log(this.selectedSeats);
-      // ✅ Підготовка місць у форматі, який очікує бекенд
       const seatDetails = this.selectedSeats.map(seat => ({
         seatNumber: seat.id, // 🔁 зміна з id на seat_number
         priceId: seat.priceId,
+        price: this.getSeatPrice(seat.class).toFixed(2),
+        class: seat.class,
       }));
 
       const totalAmount = Math.round(this.calculateSeatsTotal() * 100);
-
-      console.log(JSON.stringify({
-        flightId: this.bookingDetails.flightId,
-        selectedSeats: seatDetails,
-        selectedServices: this.selectedServices,
-      }));
 
       try {
         const response = await fetch(`/create-checkout-session/`, {
@@ -1152,19 +1129,15 @@ export default {
           },
           body: JSON.stringify({
             flightId: this.bookingDetails.flightId,
-            destination: this.bookingDetails.destination,
-            date: this.bookingDetails.date,
-            seats: this.selectedSeats.length,
-            selectedSeats: seatDetails, // ✅ оновлений масив
-            totalAmount: totalAmount,
+            selectedSeats: seatDetails,
             selectedServices: this.selectedServices,
           }),
         });
 
         const data = await response.json();
 
-        if (data.url) {
-          window.location.href = data.url;
+        if (data.success) {
+          window.location.href = data.data.url;
         } else {
           console.error('Error:', data.error || 'Unknown error');
         }
@@ -1344,10 +1317,10 @@ export default {
           this.occupiedSeats = selectedFlight.taken;
           this.bookingDetails.flightId = selectedFlight.flight_id;
         } else {
-          console.log('Error!');
+          console.error('Error!');
         }
       } else {
-        console.log('Error!');
+        console.error('Error!');
       }
     },
 

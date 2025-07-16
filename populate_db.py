@@ -113,25 +113,25 @@ def populate():
             description='Additional cabin baggage up to 10kg',
             price=30,
             weight=10,
-            stripe_price_id='',
+            stripe_price_id='price_1RP112QMzydK9SUpQ4fF47Ke',
         ),Baggage.objects.create(
             name='Additional Checked Bag',
             description='Extra checked luggage up to 23kg',
             price=50,
             weight=23,
-            stripe_price_id='',
+            stripe_price_id='price_1RlD1EQMzydK9SUpDwYAsGeK',
         ),Baggage.objects.create(
             name='Sports Equipment',
             description='Special handling for sports gear',
             price=40,
             weight=30,
-            stripe_price_id='',
+            stripe_price_id='price_1RlD1tQMzydK9SUpUkFJtgZ1',
         ),Baggage.objects.create(
             name='Overweight Allowance',
             description='Increase weight limit for checked baggage',
             price=40,
             weight=10,
-            stripe_price_id='',
+            stripe_price_id='price_1RlD2CQMzydK9SUpVPP5Kgjy',
         )
     ]
 
@@ -145,17 +145,17 @@ def populate():
             name='Lounge Access',
             description='Enjoy exclusive airport lounge facilities',
             price=45,
-            stripe_price_id='',
+            stripe_price_id='price_1RlD4aQMzydK9SUphzo0XMxc',
         ),Comfort.objects.create(
             name='In-flight Wi-Fi',
             description='Stay connected throughout your journey',
             price=12,
-            stripe_price_id='',
+            stripe_price_id='price_1RlD4sQMzydK9SUpPr2AULAX',
         ),Comfort.objects.create(
             name='Travel Kit',
             description='Comfort kit with pillow, blanket and toiletries',
             price=20,
-            stripe_price_id='',
+            stripe_price_id='price_1RlD5FQMzydK9SUpePtjbHu1',
         )
     ]
 

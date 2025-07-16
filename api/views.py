@@ -312,6 +312,7 @@ class StripeWebhookView(APIView):
 
         try:
             event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
+            print(json.dumps(event, indent=2))
 
         except ValueError as e:
             print(f"⚠️ Invalid payload: {e}")
@@ -369,7 +370,7 @@ class StripeWebhookView(APIView):
 
             for seat in seats:
                 ticket = Ticket.objects.create(
-                    seat_number=seat["id"],
+                    seat_number=seat["seatNumber"],
                     price=seat["price"],
                     flight_id=metadata["flight_id"],
                     passenger_id=user.id,
