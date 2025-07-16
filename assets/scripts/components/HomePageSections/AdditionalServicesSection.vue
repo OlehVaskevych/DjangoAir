@@ -43,7 +43,7 @@
                           >
                             <div class="d-flex justify-content-between align-items-start mb-2">
                               <h4 class="fs-5 mb-0 text-white">{{ meal.name }}</h4>
-                              <span class="badge bg-primary rounded-pill">${{ meal.price.toFixed(2) }}</span>
+                              <span class="badge bg-primary rounded-pill">${{ Number(meal.price).toFixed(2) }}</span>
                             </div>
                             <p class="small text-white-50 mb-2">{{ meal.description }}</p>
                             <div class="service-image mb-2">
@@ -82,7 +82,7 @@
                           >
                             <div class="d-flex justify-content-between align-items-start mb-2">
                               <h4 class="fs-5 mb-0 text-white">{{ baggage.name }}</h4>
-                              <span class="badge bg-primary rounded-pill">${{ baggage.price.toFixed(2) }}</span>
+                              <span class="badge bg-primary rounded-pill">${{ Number(baggage.price).toFixed(2) }}</span>
                             </div>
                             <p class="small text-white-50 mb-2">{{ baggage.description }}</p>
                             <div class="d-flex justify-content-between align-items-center">
@@ -118,7 +118,7 @@
                           >
                             <div class="d-flex justify-content-between align-items-start mb-2">
                               <h4 class="fs-5 mb-0 text-white">{{ comfort.name }}</h4>
-                              <span class="badge bg-primary rounded-pill">${{ comfort.price.toFixed(2) }}</span>
+                              <span class="badge bg-primary rounded-pill">${{ Number(comfort.price).toFixed(2) }}</span>
                             </div>
                             <p class="small text-white-50 mb-2">{{ comfort.description }}</p>
                             <div class="selection-indicator">
@@ -170,7 +170,7 @@
                           <h5 class="fs-6 text-white-50">Meals</h5>
                           <div v-for="mealId in selectedServices.meals" :key="`meal-summary-${mealId}`" class="service-summary-item d-flex justify-content-between mb-2">
                             <span class="text-white">{{ getMealName(mealId) }}</span>
-                            <span class="text-white">${{ getMealPrice(mealId).toFixed(2) }}</span>
+                            <span class="text-white">${{ Number(getMealPrice(mealId)).toFixed(2) }}</span>
                           </div>
                         </div>
 
@@ -179,7 +179,7 @@
                           <h5 class="fs-6 text-white-50">Extra Baggage</h5>
                           <div v-for="baggageId in selectedServices.baggage" :key="`baggage-summary-${baggageId}`" class="service-summary-item d-flex justify-content-between mb-2">
                             <span class="text-white">{{ getBaggageName(baggageId) }}</span>
-                            <span class="text-white">${{ getBaggagePrice(baggageId).toFixed(2) }}</span>
+                            <span class="text-white">${{ Number(getBaggagePrice(baggageId)).toFixed(2) }}</span>
                           </div>
                         </div>
 
@@ -188,7 +188,7 @@
                           <h5 class="fs-6 text-white-50">Comfort Extras</h5>
                           <div v-for="comfortId in selectedServices.comfort" :key="`comfort-summary-${comfortId}`" class="service-summary-item d-flex justify-content-between mb-2">
                             <span class="text-white">{{ getComfortName(comfortId) }}</span>
-                            <span class="text-white">${{ getComfortPrice(comfortId).toFixed(2) }}</span>
+                            <span class="text-white">${{ Number(getComfortPrice(comfortId)).toFixed(2) }}</span>
                           </div>
                         </div>
 
@@ -203,15 +203,15 @@
                       <div class="mb-4">
                         <div class="d-flex justify-content-between mb-2">
                           <span class="text-white opacity-75">Seats Total:</span>
-                          <span class="text-white">${{ calculateSeatsTotal().toFixed(2) }}</span>
+                          <span class="text-white">${{ Number(calculateSeatsTotal()).toFixed(2) }}</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
                           <span class="text-white opacity-75">Services Total:</span>
-                          <span class="text-white">${{ calculateServicesTotal().toFixed(2) }}</span>
+                          <span class="text-white">${{ Number(calculateServicesTotal()).toFixed(2) }}</span>
                         </div>
                         <div class="d-flex justify-content-between fs-5 fw-bold mt-3">
                           <span class="text-white">Grand Total:</span>
-                          <span class="text-glow">${{ calculateGrandTotal().toFixed(2) }}</span>
+                          <span class="text-glow">${{ Number(calculateGrandTotal()).toFixed(2) }}</span>
                         </div>
                       </div>
 
@@ -357,7 +357,7 @@ export default {
 
     getMealPriceId(id) {
       const meal = this.mealOptions.find(meal => meal.id === id);
-      return meal ? meal.price_id : '';
+      return meal ? meal.stripe_price_id : '';
     },
 
     /**
@@ -382,7 +382,7 @@ export default {
 
     getBaggagePriceId(id) {
       const baggage = this.baggageOptions.find(baggage => baggage.id === id);
-      return baggage ? baggage.price_id : '';
+      return baggage ? baggage.stripe_price_id : '';
     },
 
     /**
@@ -407,7 +407,7 @@ export default {
 
     getComfortPriceId(id) {
       const comfort = this.comfortOptions.find(comfort => comfort.id === id);
-      return comfort ? comfort.price_id : '';
+      return comfort ? comfort.stripe_price_id : '';
     },
 
     /**
@@ -437,18 +437,18 @@ export default {
       let total = 0;
 
       // Add meal prices
-      this.selectedServices.meals.forEach(mealId => {
-        total += this.getMealPrice(mealId);
+      this.selectedServices.meals.forEach(meal => {
+        total += Number(this.getMealPrice(meal));
       });
 
       // Add baggage prices
       this.selectedServices.baggage.forEach(baggageId => {
-        total += this.getBaggagePrice(baggageId);
+        total += Number(this.getBaggagePrice(baggageId));
       });
 
       // Add comfort prices
       this.selectedServices.comfort.forEach(comfortId => {
-        total += this.getComfortPrice(comfortId);
+        total += Number(this.getComfortPrice(comfortId));
       });
 
       return total;
@@ -520,7 +520,7 @@ export default {
           this.comfortOptions = data.comfort;
         })
         .catch(error => {
-          console.log('Failed to fetch additional services.', error);
+          console.error('Failed to fetch additional services.', error);
         })
   }
 };

@@ -554,6 +554,7 @@ export default {
             'X-CSRFToken': this.getCookie('csrftoken')
           },
           body: new URLSearchParams(loginData),
+          credentials: "include",
         });
 
         const data = await response.json();

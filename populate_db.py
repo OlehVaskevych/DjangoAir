@@ -1,6 +1,7 @@
 import random
 from faker import Faker
 from django.utils import timezone
+from decimal import Decimal
 from datetime import timedelta
 from air.models import *
 
@@ -35,8 +36,21 @@ def populate():
         )
         passengers.append(user)
 
+    user = AirlineUser.objects.create_user(
+        username='Supervisor',
+        password='secretpassword',
+        email=fake.email(),
+        role=AirlineUser.Role.SUPERVISOR,
+    )
+
     # Створюємо літак
-    airplane = Airplane.objects.create(name="Boeing 737", seat_capacity=150)
+    airplane = Airplane.objects.create(
+        name="Boeing 737",
+        seat_capacity=150,
+        economy_seats=120,
+        business_seats=20,
+        first_class_seats=10,
+    )
 
     flights = []
     for _ in range(3):
@@ -51,7 +65,7 @@ def populate():
             destination_code=fake.country_code(),
             departure_time=departure,
             arrival_time=arrival,
-            base_price=random.uniform(100, 500),
+            base_price=Decimal(str(random.uniform(100, 500))),
             airplane=airplane,
         )
         flights.append(flight)
@@ -99,25 +113,25 @@ def populate():
             description='Additional cabin baggage up to 10kg',
             price=30,
             weight=10,
-            stripe_price_id='',
+            stripe_price_id='price_1RP112QMzydK9SUpQ4fF47Ke',
         ),Baggage.objects.create(
             name='Additional Checked Bag',
             description='Extra checked luggage up to 23kg',
             price=50,
             weight=23,
-            stripe_price_id='',
+            stripe_price_id='price_1RlD1EQMzydK9SUpDwYAsGeK',
         ),Baggage.objects.create(
             name='Sports Equipment',
             description='Special handling for sports gear',
             price=40,
             weight=30,
-            stripe_price_id='',
+            stripe_price_id='price_1RlD1tQMzydK9SUpUkFJtgZ1',
         ),Baggage.objects.create(
             name='Overweight Allowance',
             description='Increase weight limit for checked baggage',
             price=40,
             weight=10,
-            stripe_price_id='',
+            stripe_price_id='price_1RlD2CQMzydK9SUpVPP5Kgjy',
         )
     ]
 
@@ -131,17 +145,17 @@ def populate():
             name='Lounge Access',
             description='Enjoy exclusive airport lounge facilities',
             price=45,
-            stripe_price_id='',
+            stripe_price_id='price_1RlD4aQMzydK9SUphzo0XMxc',
         ),Comfort.objects.create(
             name='In-flight Wi-Fi',
             description='Stay connected throughout your journey',
             price=12,
-            stripe_price_id='',
+            stripe_price_id='price_1RlD4sQMzydK9SUpPr2AULAX',
         ),Comfort.objects.create(
             name='Travel Kit',
             description='Comfort kit with pillow, blanket and toiletries',
             price=20,
-            stripe_price_id='',
+            stripe_price_id='price_1RlD5FQMzydK9SUpePtjbHu1',
         )
     ]
 
@@ -153,8 +167,7 @@ def populate():
             flight=flight,
             seat_number=f"{random.randint(1, 30)}{random.choice('ABCDEF')}",
             seat_class=random.choice(SeatClassChoices.values),
-            price=flight.base_price + random.uniform(20, 100),
-            booking_reference=generate_booking_reference()
+            price=flight.base_price + Decimal(str(random.uniform(20, 100))),
         )
         ticket.meals.set(random.sample(meals, k=random.randint(0, 2)))
         ticket.baggage.set(random.sample(baggage_options, k=random.randint(0, 2)))
@@ -168,7 +181,7 @@ def populate():
             BoardingPass.objects.create(
                 ticket=ticket,
                 gate_number=str(random.randint(1, 10)),
-                boarding_time=timezone.now() + timedelta(minutes=random.randint(10, 60))
+                boarding_time = flight.departure_time - timedelta(minutes=random.randint(30, 90))
             )
 
     print("Database populated.")

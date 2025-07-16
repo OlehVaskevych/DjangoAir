@@ -372,8 +372,8 @@ def create_checkout_session(request):
                 "seats": json.dumps(selected_seats),
                 "services": json.dumps(selected_services),
             },
-            success_url="http://localhost:8000/bookings/",
-            cancel_url="http://localhost:8000/",
+            success_url="https://localhost/bookings/",
+            cancel_url="https://localhost/",
         )
 
         return JsonResponse({
