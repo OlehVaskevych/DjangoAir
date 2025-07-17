@@ -1225,7 +1225,7 @@ export default {
      */
     initializeWebSocket() {
       if (this.socket && this.socket.readyState !== WebSocket.CLOSED) {
-        console.log("WebSocket already open or connecting.");
+        console.warn("WebSocket already open or connecting.");
         return;
       }
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="supervisor-dashboard-page">
+    <div class="supervisor-dashboard-page">
     <!-- Header -->
     <div class="header-section">
       <div class="container">
@@ -1143,12 +1143,12 @@
               <div class="col-md-6">
                 <h6 class="fw-bold mb-3 text-success">Passenger & Flight</h6>
                 <table class="table table-dark table-borderless">
-                  <tr><td class="fw-semibold">Passenger:</td><td>{{ selectedTicket.passenger_username }} ({{ selectedTicket.passenger_email }})</td></tr>
-                  <tr><td class="fw-semibold">Flight:</td><td>{{ selectedTicket.flight_number }} ({{ selectedTicket.flight_destination }})</td></tr>
-                  <tr><td class="fw-semibold">Departure:</td><td>{{ formatDateTime(selectedTicket.flight_departure_time) }}</td></tr>
-                  <tr><td class="fw-semibold">Meals:</td><td>{{ selectedTicket.meals_names && selectedTicket.meals_names.length > 0 ? selectedTicket.meals_names.join(', ') : 'None' }}</td></tr>
-                  <tr><td class="fw-semibold">Baggage:</td><td>{{ selectedTicket.baggage_names && selectedTicket.baggage_names.length > 0 ? selectedTicket.baggage_names.join(', ') : 'None' }}</td></tr>
-                  <tr><td class="fw-semibold">Comforts:</td><td>{{ selectedTicket.comforts_names && selectedTicket.comforts_names.length > 0 ? selectedTicket.comforts_names.join(', ') : 'None' }}</td></tr>
+                  <tr><td class="fw-semibold">Passenger:</td><td>{{ selectedTicketPassengerDetails?.username }} ({{ selectedTicketPassengerDetails?.email }})</td></tr>
+                  <tr><td class="fw-semibold">Flight:</td><td>{{ selectedTicketFlightDetails?.flight_number }} ({{ selectedTicketFlightDetails?.destination }})</td></tr>
+                  <tr><td class="fw-semibold">Departure:</td><td>{{ formatDateTime(selectedTicketFlightDetails?.departure_time) }}</td></tr>
+                  <tr><td class="fw-semibold">Meals:</td><td>{{ selectedTicketMealNames.length > 0 ? selectedTicketMealNames.join(', ') : 'None' }}</td></tr>
+                  <tr><td class="fw-semibold">Baggage:</td><td>{{ selectedTicketBaggageNames.length > 0 ? selectedTicketBaggageNames.join(', ') : 'None' }}</td></tr>
+                  <tr><td class="fw-semibold">Comforts:</td><td>{{ selectedTicketComfortNames.length > 0 ? selectedTicketComfortNames.join(', ') : 'None' }}</td></tr>
                 </table>
               </div>
             </div>
@@ -1279,7 +1279,7 @@
                 <h6 class="fw-bold mb-3 text-success">Details</h6>
                 <table class="table table-dark table-borderless">
                   <tr><td class="fw-semibold">Description:</td><td>{{ selectedMeal.description }}</td></tr>
-                  <tr><td class="fw-semibold">Dietary Options:</td><td>{{ selectedMeal.dietary_options_names && selectedMeal.dietary_options_names.length > 0 ? selectedMeal.dietary_options_names.join(', ') : 'None' }}</td></tr>
+                  <tr><td class="fw-semibold">Dietary Options:</td><td>{{ selectedMealDietaryOptionNames.length > 0 ? selectedMealDietaryOptionNames.join(', ') : 'None' }}</td></tr>
                   <tr><td class="fw-semibold">Image:</td><td><img :src="selectedMeal.image_url" alt="Meal Image" class="img-fluid rounded" style="max-height: 100px;"></td></tr>
                 </table>
               </div>
@@ -1808,6 +1808,35 @@ export default {
       }
       return pages;
     },
+    selectedTicketPassengerDetails() {
+      if (!this.selectedTicket || !this.selectedTicket.passenger) return null;
+      return this.users.find(u => u.id === this.selectedTicket.passenger);
+    },
+    selectedTicketFlightDetails() {
+      if (!this.selectedTicket || !this.selectedTicket.flight) return null;
+      return this.flights.find(f => f.id === this.selectedTicket.flight);
+    },
+    selectedTicketMealNames() {
+      if (!this.selectedTicket || !Array.isArray(this.selectedTicket.meals)) return [];
+      return this.selectedTicket.meals.map(mealId => {
+        const meal = this.meals.find(m => m.id === mealId);
+        return meal ? meal.name : 'Unknown Meal';
+      });
+    },
+    selectedTicketBaggageNames() {
+      if (!this.selectedTicket || !Array.isArray(this.selectedTicket.baggage)) return [];
+      return this.selectedTicket.baggage.map(baggageId => {
+        const baggage = this.baggageOptions.find(b => b.id === baggageId);
+        return baggage ? baggage.name : 'Unknown Baggage';
+      });
+    },
+    selectedTicketComfortNames() {
+      if (!this.selectedTicket || !Array.isArray(this.selectedTicket.comforts)) return [];
+      return this.selectedTicket.comforts.map(comfortId => {
+        const comfort = this.comfortOptions.find(c => c.id === comfortId);
+        return comfort ? comfort.name : 'Unknown Comfort';
+      });
+    },
 
     // Meal Management Computed Properties
     paginatedMeals() {
@@ -1826,6 +1855,13 @@ export default {
         pages.push(i);
       }
       return pages;
+    },
+    selectedMealDietaryOptionNames() {
+      if (!this.selectedMeal || !Array.isArray(this.selectedMeal.dietary_options)) return [];
+      return this.selectedMeal.dietary_options.map(optionId => {
+        const option = this.dietaryOptions.find(d => d.id === optionId);
+        return option ? option.name : 'Unknown Option';
+      });
     },
 
     // Baggage Management Computed Properties
@@ -1994,36 +2030,40 @@ export default {
     },
 
     // --- Data Fetching for Current View ---
-    fetchDataForCurrentView() {
+    async fetchDataForCurrentView() {
+      // Fetch all necessary lookup data first
+      await Promise.all([
+        this.fetchUsers(),
+        this.fetchFlights(),
+        this.fetchMeals(),
+        this.fetchBaggageOptions(),
+        this.fetchComfortOptions(),
+        this.fetchAirplanes(),
+        this.fetchDietaryOptions(),
+      ]);
+
+      // Then fetch the main data for the current view
       switch (this.currentView) {
         case 'users':
-          this.fetchUsers();
+          this.applyUserFilters(); // Users data is already fetched by fetchUsers
           break;
         case 'flights':
-          this.fetchFlights();
-          this.fetchAirplanes(); // Flights need airplane data for dropdown
+          this.applyFlightFilters(); // Flights data is already fetched by fetchFlights
           break;
         case 'tickets':
-          this.fetchTickets();
-          this.fetchUsers(); // Tickets need user data for dropdown
-          this.fetchFlights(); // Tickets need flight data for dropdown
-          this.fetchMeals(); // Tickets need meals for dropdown
-          this.fetchBaggageOptions(); // Tickets need baggage for dropdown
-          this.fetchComfortOptions(); // Tickets need comforts for dropdown
+          this.fetchTickets(); // Tickets need enriched data
           break;
         case 'meals':
-          this.fetchMeals();
-          // Assuming DietaryOption is a separate model, fetch it too
-          this.fetchDietaryOptions();
+          this.applyMealFilters(); // Meals data is already fetched by fetchMeals
           break;
         case 'baggage':
-          this.fetchBaggageOptions();
+          this.applyBaggageFilters(); // Baggage data is already fetched by fetchBaggageOptions
           break;
         case 'comforts':
-          this.fetchComfortOptions();
+          this.applyComfortFilters(); // Comforts data is already fetched by fetchComfortOptions
           break;
         case 'airplanes':
-          this.fetchAirplanes();
+          this.applyAirplaneFilters(); // Airplanes data is already fetched by fetchAirplanes
           break;
         default:
           break;
@@ -2188,7 +2228,16 @@ export default {
       try {
         const response = await fetch('/api/flights/'); // Adjust API endpoint as needed
         if (!response.ok) throw new Error("Failed to fetch flights");
-        this.flights = await response.json();
+        const flightsData = await response.json();
+        // Enrich flights with airplane name and capacity
+        this.flights = flightsData.map(flight => {
+          const airplane = this.airplanes.find(a => a.id === flight.airplane);
+          return {
+            ...flight,
+            airplane_name: airplane ? airplane.name : 'N/A',
+            airplane_seat_capacity: airplane ? airplane.seat_capacity : 'N/A',
+          };
+        });
         this.applyFlightFilters();
       } catch (error) {
         console.error("Error fetching flights:", error);
@@ -2239,7 +2288,7 @@ export default {
           // Format dates for datetime-local input
           departure_time: flight.departure_time ? new Date(flight.departure_time).toISOString().slice(0, 16) : '',
           arrival_time: flight.arrival_time ? new Date(flight.arrival_time).toISOString().slice(0, 16) : '',
-          airplane: flight.airplane_id || null // Assuming API returns airplane_id
+          airplane: flight.airplane || null // Assuming API returns airplane_id
         };
       }
       if (this.createEditFlightModalInstance) {
@@ -2323,7 +2372,32 @@ export default {
       try {
         const response = await fetch('/api/tickets/'); // Adjust API endpoint as needed
         if (!response.ok) throw new Error("Failed to fetch tickets");
-        this.tickets = await response.json();
+        const ticketsData = await response.json();
+        // Enrich tickets with passenger username and flight number
+        this.tickets = ticketsData.map(ticket => {
+          const passenger = this.users.find(u => u.id === ticket.passenger);
+          const flight = this.flights.find(f => f.id === ticket.flight);
+          return {
+            ...ticket,
+            passenger_username: passenger ? passenger.username : 'N/A',
+            passenger_email: passenger ? passenger.email : 'N/A',
+            flight_number: flight ? flight.flight_number : 'N/A',
+            flight_destination: flight ? flight.destination : 'N/A',
+            flight_departure_time: flight ? flight.departure_time : 'N/A',
+            meals_names: ticket.meals ? ticket.meals.map(mealId => {
+              const meal = this.meals.find(m => m.id === mealId);
+              return meal ? meal.name : 'Unknown Meal';
+            }) : [],
+            baggage_names: ticket.baggage ? ticket.baggage.map(baggageId => {
+              const baggage = this.baggageOptions.find(b => b.id === baggageId);
+              return baggage ? baggage.name : 'Unknown Baggage';
+            }) : [],
+            comforts_names: ticket.comforts ? ticket.comforts.map(comfortId => {
+              const comfort = this.comfortOptions.find(c => c.id === comfortId);
+              return comfort ? comfort.name : 'Unknown Comfort';
+            }) : [],
+          };
+        });
         this.applyTicketFilters();
       } catch (error) {
         console.error("Error fetching tickets:", error);
@@ -2373,11 +2447,11 @@ export default {
       if (ticket) {
         this.editTicketForm = {
           ...ticket,
-          passenger: ticket.passenger_id, // Assuming API returns passenger_id
-          flight: ticket.flight_id, // Assuming API returns flight_id
-          meals: ticket.meals_ids || [], // Assuming API returns meals_ids
-          baggage: ticket.baggage_ids || [], // Assuming API returns baggage_ids
-          comforts: ticket.comforts_ids || [], // Assuming API returns comforts_ids
+          passenger: ticket.passenger, // Use the ID directly from the enriched ticket
+          flight: ticket.flight,     // Use the ID directly from the enriched ticket
+          meals: ticket.meals || [],
+          baggage: ticket.baggage || [],
+          comforts: ticket.comforts || [],
         };
       }
       if (this.createEditTicketModalInstance) {
@@ -2498,7 +2572,7 @@ export default {
       if (meal) {
         this.editMealForm = {
           ...meal,
-          dietary_options: meal.dietary_options_ids || [] // Assuming API returns dietary_options_ids
+          dietary_options: meal.dietary_options || [] // Assuming API returns dietary_options_ids
         };
       }
       if (this.createEditMealModalInstance) {

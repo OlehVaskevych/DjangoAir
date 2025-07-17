@@ -10,6 +10,13 @@ SEAT_CLASS_STRIPE_IDS = {
     "first": "price_1RP0zFQMzydK9SUptZsV3qKC",
 }
 
+def get_staff_for_airport():
+    from air.models import AirlineUser
+
+    return AirlineUser.objects.filter(
+        role__in=['gate_manager', 'checkin_manager', 'supervisor']
+    )
+
 def notify_user(user_id, message):
     channel_layer = get_channel_layer()
     group_name = f"user_{user_id}"

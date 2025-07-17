@@ -6,7 +6,7 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
 from .models import BoardingPass, CheckIn, Ticket, TicketStatusChoices, AirlineUser, Flight, Seats
-from .utils import generate_seats_for_flight, notify_user, get_users_for_flight
+from .utils import generate_seats_for_flight, notify_user, get_users_for_flight, get_staff_for_airport
 
 
 @receiver(pre_save, sender=AirlineUser)
@@ -61,43 +61,41 @@ def reserve_seat_on_ticket_creation(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Flight)
 def flight_status_update(sender, instance, created, **kwargs):
-    # Якщо не створено новий об'єкт, а оновлено
-    if not created:
-        # Перевірка, чи змінився статус рейсу
-        if instance.tracker.has_changed('status'):
-            old_status = instance.tracker.previous('status')
-            new_status = instance.status
+    if not created and instance.tracker.has_changed('status'):
+        old_status = instance.tracker.previous('status')
+        new_status = instance.status
 
-            origin = instance.origin
-            origin_code = instance.origin_code
-            destination = instance.destination
-            destination_code = instance.destination_code
+        origin = instance.origin
+        origin_code = instance.origin_code
+        destination = instance.destination
+        destination_code = instance.destination_code
 
-            if old_status == 'upcoming':
-                if new_status == 'in_air':
-                    message = (
-                        f"Ваш рейс {origin} [{origin_code}] → {destination} [{destination_code}] відлітає."
-                    )
-                elif new_status == 'canceled':
-                    message = (
-                        f"Ваш рейс {origin} [{origin_code}] → {destination} [{destination_code}] скасовано."
-                    )
-                else:
-                    message = (
-                        f"Ваш рейс {origin} [{origin_code}] → {destination} [{destination_code}] змінив статус з "
-                        f"«{old_status}» на «{new_status}»."
-                    )
+        user_message = None
+        staff_message = None
+
+        if old_status == 'upcoming':
+            if new_status == 'in_air':
+                user_message = f"Your flight {origin} [{origin_code}] → {destination} [{destination_code}] is now taking off."
+                staff_message = f"Flight {origin_code} → {destination_code} has taken off. Check-in and boarding should be complete."
+            elif new_status == 'canceled':
+                user_message = f"Your flight {origin} [{origin_code}] → {destination} [{destination_code}] has been canceled."
+                staff_message = f"Flight {origin_code} → {destination_code} has been canceled. Notify gate and check-in personnel."
             else:
-                message = (
-                    f"Ваш рейс {origin} [{origin_code}] → {destination} [{destination_code}] змінив статус з "
-                    f"«{old_status}» на «{new_status}»."
-                )
+                user_message = f"Your flight {origin} [{origin_code}] → {destination} [{destination_code}] changed status from «{old_status}» to «{new_status}»."
+        else:
+            user_message = f"Your flight {origin} [{origin_code}] → {destination} [{destination_code}] changed status from «{old_status}» to «{new_status}»."
 
-            # Отримуємо список користувачів, які ще не сіли в літак
+        # Notify passengers
+        if user_message:
             users_to_notify = get_users_for_flight(instance)
-
             for user in users_to_notify:
-                notify_user(user.id, message)
+                notify_user(user.id, user_message)
+
+        # Notify staff
+        if staff_message:
+            staff_users = get_staff_for_airport()
+            for staff in staff_users:
+                notify_user(staff.id, staff_message)
 
 
 @receiver(post_save, sender=Ticket)

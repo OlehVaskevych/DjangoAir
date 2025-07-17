@@ -40,7 +40,7 @@ class MealSerializer(serializers.ModelSerializer):
         return [option.name for option in obj.dietary_options.all()]
 
 
-AirlineUserSerializer = generate_serializer(models.AirlineUser, ["id", "username", "first_name", "last_name", "role", "email"])
+AirlineUserSerializer = generate_serializer(models.AirlineUser, ["id", "username", "first_name", "last_name", "role", "email", "is_active", "is_staff", "is_superuser", "last_login", "date_joined", "date_joined"])
 BaggageSerializer = generate_serializer(models.Baggage, "__all__")
 ComfortSerializer = generate_serializer(models.Comfort, "__all__")
 AirplaneSerializer = generate_serializer(models.Airplane, "__all__")
