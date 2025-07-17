@@ -21,13 +21,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from air.models import (AirlineUser, Airplane, Baggage, BoardingPass, CheckIn,
-                        Comfort, Flight, Meal, Ticket, TicketStatusChoices, Seats)
+                        Comfort, Flight, Meal, Ticket, TicketStatusChoices, Seats, DietaryOption)
 
 from .serializers import (AirlineUserSerializer, AirplaneSerializer,
                           BaggageSerializer, BoardingPassSerializer,
                           CheckInSerializer, ComfortSerializer,
                           CurrentUserSerializer, FlightSerializer,
-                          MealSerializer, TicketSerializer)
+                          MealSerializer, TicketSerializer, DietaryOptionsSerializer)
 
 
 def generate_view_sets(model, model_serializer):
@@ -39,12 +39,15 @@ def generate_view_sets(model, model_serializer):
 
 
 AirlineUsersViewSet = generate_view_sets(AirlineUser, AirlineUserSerializer)
+AirplanesViewSet = generate_view_sets(Airplane, AirplaneSerializer)
+FlightsViewSet = generate_view_sets(Flight, FlightSerializer)
 MealViewSet = generate_view_sets(Meal, MealSerializer)
 BaggageViewSet = generate_view_sets(Baggage, BaggageSerializer)
 ComfortViewSet = generate_view_sets(Comfort, ComfortSerializer)
 TicketViewSet = generate_view_sets(Ticket, TicketSerializer)
 CheckInViewSet = generate_view_sets(CheckIn, CheckInSerializer)
 BoardingPassViewSet = generate_view_sets(BoardingPass, BoardingPassSerializer)
+DietaryOptionsViewSet = generate_view_sets(DietaryOption, DietaryOptionsSerializer)
 
 
 # Generates a booking reference like 'A1B2C3D4E5'

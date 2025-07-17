@@ -6,17 +6,21 @@ from .views import (AdditionalServicesAPIView, AirlineUsersViewSet,
                     CheckInViewSet, ComfortViewSet, CurrentUserAPIView,
                     MealViewSet, StripeWebhookView, TicketViewSet,
                     UserTicketsAPIView, SeatMapAPIView, GetTicketsAPIView,
-                    ConfirmBoardingAPIView, ConfirmCheckedInAPIView)
+                    ConfirmBoardingAPIView, ConfirmCheckedInAPIView, FlightsViewSet,
+                    AirplanesViewSet, DietaryOptionsViewSet)
 
 router = DefaultRouter()
 
 router.register(r"users", AirlineUsersViewSet)
+router.register(r"airplanes", AirplanesViewSet)
+router.register(r"flights", FlightsViewSet)
 router.register(r"meals", MealViewSet)
-router.register(r"baggages", BaggageViewSet)
+router.register(r"baggage", BaggageViewSet)
 router.register(r"comforts", ComfortViewSet)
 router.register(r"tickets", TicketViewSet)
 router.register(r"checkins", CheckInViewSet)
 router.register(r"boardingpass", BoardingPassViewSet)
+router.register(r"dietary_options", DietaryOptionsViewSet)
 
 urlpatterns = [
     path(

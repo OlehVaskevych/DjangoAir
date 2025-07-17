@@ -48,6 +48,7 @@ FlightSerializer = generate_serializer(models.Flight, "__all__")
 TicketSerializer = generate_serializer(models.Ticket, "__all__")
 CheckInSerializer = generate_serializer(models.CheckIn, "__all__")
 BoardingPassSerializer = generate_serializer(models.BoardingPass, "__all__")
+DietaryOptionsSerializer = generate_serializer(models.DietaryOption, "__all__")
 
 
 class CurrentUserSerializer(serializers.ModelSerializer):

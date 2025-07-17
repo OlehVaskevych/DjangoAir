@@ -9,6 +9,7 @@ urlpatterns = [
 
     path("staff_dashboard/gate_manager/", views.gate_manager, name="gate_manager"),
     path("staff_dashboard/checkin_manager/", views.checkin_manager, name="check_in_manager"),
+    path("staff_dashboard/supervisor/", views.supervisor, name="supervisor"),
 
     # Endpoint for creating a Stripe checkout session to process payments
     path(
