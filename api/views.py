@@ -457,7 +457,7 @@ class SeatMapAPIView(APIView):
         return Response({"seatMap": seat_map}, status=status.HTTP_200_OK)
 
 
-class UpcomingTicketsAPIView(APIView):
+class GetTicketsAPIView(APIView):
     def get(self, request):
         tickets = Ticket.objects.select_related("flight")
 
@@ -531,5 +531,32 @@ class ConfirmBoardingAPIView(APIView):
         return Response(TicketSerializer(ticket).data, status=status.HTTP_200_OK)
 
 class ConfirmCheckedInAPIView(APIView):
-    pass
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        ticket_id = data.get('id')
+        baggage_weight = data.get('baggage_weight')
+
+        if not ticket_id:
+            return Response({"detail": "Ticket ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            ticket = Ticket.objects.get(id=ticket_id)
+        except Ticket.DoesNotExist:
+            return Response({"detail": "Ticket not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if ticket.status != TicketStatusChoices.UPCOMING or ticket.is_checked_in == True or ticket.is_boarded == True:
+            return Response({"detail": "Ticket must be upcoming in before checked in!"}, status=status.HTTP_400_BAD_REQUEST)
+
+        ticket.is_checked_in = True
+
+        ticket.save(update_fields=["is_checked_in"])
+
+        CheckIn.objects.create(
+            ticket=ticket,
+            luggage_weight=baggage_weight,
+            created_at=timezone.now(),
+        )
+
+        return Response(TicketSerializer(ticket).data, status=status.HTTP_200_OK)
+
 

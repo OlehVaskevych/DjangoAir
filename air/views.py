@@ -395,5 +395,11 @@ def gate_manager(request):
     if request.user.is_authenticated:
         return render(request, 'gate_manager.html')
 
+
+@login_required(login_url="/")
+def checkin_manager(request):
+    if request.user.is_authenticated:
+        return render(request, 'check_in_manager.html')
+
 def health_check(request):
     return JsonResponse({"success": True})

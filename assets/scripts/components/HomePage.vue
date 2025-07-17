@@ -26,7 +26,7 @@
         <a href="/" class="profile-menu-item active">Home</a>
         <a href="/bookings" class="profile-menu-item">My Bookings</a>
         <a v-if="userData.role === 'gate_manager'" href="/staff_dashboard/gate_manager/" class="profile-menu-item">Gate Manager Dashboard</a>
-        <a v-else-if="userData.role === 'checkin_manager'" href="/staff_dashboard" class="profile-menu-item">Check-In Manager Dashboard</a>
+        <a v-else-if="userData.role === 'checkin_manager'" href="/staff_dashboard/checkin_manager/" class="profile-menu-item">Check-In Manager Dashboard</a>
         <a v-else-if="userData.role === 'supervisor'" href="/staff_dashboard" class="profile-menu-item">Supervisor Dashboard</a>
         <button @click="logout" class="profile-menu-item logout-button">Logout</button>
       </div>

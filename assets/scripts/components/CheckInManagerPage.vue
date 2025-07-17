@@ -1,5 +1,5 @@
 <template>
-  <div class="gate-manager-page">
+  <div class="check-in-manager-page">
     <!-- Header -->
     <div class="header-section">
       <div class="container">
@@ -10,15 +10,15 @@
               <button class="btn btn-outline-light me-3" @click="goToHomePage" title="Back to Home Page">
                 <i class="fas fa-arrow-left me-2"></i>Home
               </button>
-              <h1 class="display-6 fw-bold text-white mb-2">Gate Manager Dashboard</h1>
+              <h1 class="display-6 fw-bold text-white mb-2">Check-In Manager Dashboard</h1>
             </div>
-            <p class="text-white-50 mb-0">Manage passenger boarding and gate control</p>
+            <p class="text-white-50 mb-0">Manage passenger check-in and baggage</p>
           </div>
           <div class="col-md-4 text-md-end">
             <div class="d-flex align-items-center justify-content-md-end">
               <div class="user-info me-3">
                 <small class="d-block text-white-50">Welcome back,</small>
-                <strong class="text-white">{{ userData.name || 'Gate Manager' }}</strong>
+                <strong class="text-white">{{ userData.name || 'Check-In Manager' }}</strong>
               </div>
               <div class="user-avatar">
                 <i class="fas fa-user-tie"></i>
@@ -49,30 +49,30 @@
               <i class="fas fa-check-circle"></i>
             </div>
             <div class="stat-content">
-              <h3 class="stat-number">{{ stats.processedTickets }}</h3>
-              <p class="stat-label">Boarded Today</p>
+              <h3 class="stat-number">{{ stats.checkedInToday }}</h3>
+              <p class="stat-label">Checked-in Today</p>
             </div>
           </div>
         </div>
         <div class="col-md-3 mb-3">
           <div class="stat-card">
             <div class="stat-icon bg-warning">
-              <i class="fas fa-door-open"></i>
+              <i class="fas fa-users"></i>
             </div>
             <div class="stat-content">
-              <h3 class="stat-number">{{ stats.activeGates }}</h3>
-              <p class="stat-label">Active Gates</p>
+              <h3 class="stat-number">{{ stats.upcomingPassengers }}</h3>
+              <p class="stat-label">Upcoming Passengers</p>
             </div>
           </div>
         </div>
         <div class="col-md-3 mb-3">
           <div class="stat-card">
             <div class="stat-icon bg-info">
-              <i class="fas fa-users"></i>
+              <i class="fas fa-plane-departure"></i>
             </div>
             <div class="stat-content">
-              <h3 class="stat-number">{{ stats.waitingPassengers }}</h3>
-              <p class="stat-label">Waiting Passengers</p>
+              <h3 class="stat-number">{{ stats.flightsToday }}</h3>
+              <p class="stat-label">Flights Today</p>
             </div>
           </div>
         </div>
@@ -84,22 +84,7 @@
           <div class="glass-card">
             <div class="card-body p-4">
               <div class="row g-3 align-items-end">
-                <div class="col-md-3">
-                  <label class="form-label text-white fw-semibold">Gate Number</label>
-                  <div class="input-group">
-                    <input
-                      type="text"
-                      class="form-control glass-input"
-                      v-model="filters.gateNumber"
-                      placeholder="Enter gate number"
-                      @input="filterByGate"
-                    >
-                    <button class="btn btn-outline-light" @click="clearGateFilter" type="button">
-                      <i class="fas fa-times"></i>
-                    </button>
-                  </div>
-                </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                   <label class="form-label text-white fw-semibold">Flight Number</label>
                   <input
                     type="text"
@@ -109,7 +94,7 @@
                     @input="applyFilters"
                   >
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                   <label class="form-label text-white fw-semibold">Passenger Name</label>
                   <input
                     type="text"
@@ -119,7 +104,7 @@
                     @input="applyFilters"
                   >
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                   <label class="form-label text-white fw-semibold">Status</label>
                   <select class="form-select glass-input" v-model="filters.status" @change="applyFilters">
                     <option value="">All Statuses</option>
@@ -158,9 +143,6 @@
             <div class="card-header">
               <h5 class="mb-0 text-white">
                 <i class="fas fa-ticket-alt me-2"></i>Passenger Tickets
-                <span v-if="filters.gateNumber" class="badge bg-primary ms-2">
-                  Gate {{ filters.gateNumber }}
-                </span>
               </h5>
             </div>
             <div class="card-body p-0">
@@ -172,7 +154,6 @@
                       <th>Passenger</th>
                       <th>Flight</th>
                       <th>Destination</th>
-                      <th>Gate</th>
                       <th>Seat</th>
                       <th>Departure</th>
                       <th>Status</th>
@@ -204,12 +185,6 @@
                         </div>
                       </td>
                       <td>
-                        <span v-if="ticket.gate" class="badge bg-info">
-                          {{ ticket.gate }}
-                        </span>
-                        <span v-else class="text-white-50">Not Assigned</span>
-                      </td>
-                      <td>
                         <span class="badge bg-warning text-dark">{{ ticket.seat }}</span>
                       </td>
                       <td>
@@ -233,8 +208,8 @@
                           <button
                             class="btn btn-success btn-right"
                             @click="processPassenger(ticket)"
-                            :disabled="ticket.status !== 'checked_in'"
-                            title="Process Passenger"
+                            :disabled="ticket.status !== 'upcoming'"
+                            title="Process Check-in"
                           >
                             <i class="fas fa-check"></i>
                           </button>
@@ -261,12 +236,12 @@
       </div>
     </div>
 
-    <!-- Process Passenger Modal -->
-    <div class="modal fade" id="processPassengerModal" tabindex="-1">
+    <!-- Process Check-in Modal -->
+    <div class="modal fade" id="processCheckInModal" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header border-secondary">
-            <h5 class="modal-title">Process Passenger Through Gate</h5>
+            <h5 class="modal-title">Process Passenger Check-in</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body" v-if="selectedTicket">
@@ -287,18 +262,19 @@
               </div>
             </div>
 
-            <form @submit.prevent="confirmProcessPassenger">
+            <form @submit.prevent="confirmProcessCheckIn">
               <div class="mb-4">
-                <label class="form-label fw-semibold">Gate Number <span class="text-danger">*</span></label>
+                <label class="form-label fw-semibold">Baggage Weight (kg) <span class="text-danger">*</span></label>
                 <input
-                  type="text"
+                  type="number"
                   class="form-control glass-input"
-                  v-model="processForm.gateNumber"
-                  :placeholder="selectedTicket.gate || 'Enter gate number'"
+                  v-model.number="processForm.baggageWeight"
+                  placeholder="Enter baggage weight"
                   required
+                  min="0"
                 >
                 <div class="form-text text-white-50">
-                  Current assigned gate: {{ selectedTicket.gate || 'Not assigned' }}
+                  Enter the total weight of checked baggage in kilograms.
                 </div>
               </div>
 
@@ -307,27 +283,12 @@
                   <input
                     class="form-check-input"
                     type="checkbox"
-                    v-model="processForm.confirmIdentity"
-                    id="confirmIdentity"
+                    v-model="processForm.allClear"
+                    id="allClear"
                     required
                   >
-                  <label class="form-check-label" for="confirmIdentity">
-                    I confirm that passenger identity has been verified
-                  </label>
-                </div>
-              </div>
-
-              <div class="mb-3">
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    v-model="processForm.confirmDocuments"
-                    id="confirmDocuments"
-                    required
-                  >
-                  <label class="form-check-label" for="confirmDocuments">
-                    I confirm that all travel documents are valid
+                  <label class="form-check-label" for="allClear">
+                    I confirm all necessary checks have passed (e.g., documents, security)
                   </label>
                 </div>
               </div>
@@ -338,10 +299,10 @@
             <button
               type="button"
               class="btn btn-success"
-              @click="confirmProcessPassenger"
-              :disabled="!selectedTicket || !processForm.confirmIdentity || !processForm.confirmDocuments || !processForm.gateNumber || selectedTicket.status !== 'checked_in'"
+              @click="confirmProcessCheckIn"
+              :disabled="!selectedTicket || !processForm.allClear || processForm.baggageWeight === null || selectedTicket.status !== 'upcoming'"
             >
-              <i class="fas fa-check me-2"></i>Process Passenger
+              <i class="fas fa-check me-2"></i>Process Check-in
             </button>
           </div>
         </div>
@@ -386,9 +347,9 @@
                     <td class="fw-semibold">Destination:</td>
                     <td>{{ selectedTicket.destination }}</td>
                   </tr>
-                  <tr>
-                    <td class="fw-semibold">Gate:</td>
-                    <td>{{ selectedTicket.gate || 'Not assigned' }}</td>
+                  <tr v-if="selectedTicket.baggage_weight !== undefined">
+                    <td class="fw-semibold">Baggage:</td>
+                    <td>{{ selectedTicket.baggage_weight }} kg</td>
                   </tr>
                   <tr>
                     <td class="fw-semibold">Seat:</td>
@@ -424,8 +385,7 @@
                       <strong class="text-white">{{ history.action }}</strong>
                       <small class="text-white-50">{{ formatDateTime(history.timestamp) }}</small>
                     </div>
-                    <!-- Notes are now always 'Passenger processed through gate successfully' -->
-                    <div class="text-white-50">Passenger checked-in through gate successfully</div>
+                    <div class="text-white-50">{{ history.notes }}</div>
                     <small class="text-primary">By: {{ history.processed_by }}</small>
                   </div>
                 </div>
@@ -438,9 +398,9 @@
               type="button"
               class="btn btn-success"
               @click="processPassenger(selectedTicket)"
-              :disabled="!selectedTicket || selectedTicket.status !== 'checked_in'"
+              :disabled="!selectedTicket || selectedTicket.status !== 'upcoming'"
             >
-              <i class="fas fa-check me-2"></i>Process Passenger
+              <i class="fas fa-check me-2"></i>Process Check-in
             </button>
           </div>
         </div>
@@ -451,40 +411,111 @@
 
 <script>
 export default {
-  name: 'GateManagerPage',
+  name: 'CheckInManagerPage',
   data() {
     return {
       userData: {
-        name: '',
+        name: 'Jane Doe', // Default name for Check-In Manager
         email: '',
         id: '',
-        role: ''
+        role: 'check_in_manager'
       },
       stats: {
         totalTickets: null,
-        processedTickets: null,
-        activeGates: null,
-        waitingPassengers: null
+        checkedInToday: null, // Renamed from processedTickets
+        upcomingPassengers: null, // Renamed from waitingPassengers
+        flightsToday: null // New stat
       },
-      tickets: [],
+      tickets: [
+        {
+          id: 1,
+          ticket_id: 'TK001234',
+          passenger_name: 'John Doe',
+          passenger_email: 'john.doe@email.com',
+          flight_number: 'DA101',
+          destination: 'New York',
+          seat: '12A',
+          departure_time: '2025-07-18T10:00:00Z',
+          status: 'upcoming',
+          baggage_weight: null,
+          processing_history: []
+        },
+        {
+          id: 2,
+          ticket_id: 'TK001235',
+          passenger_name: 'Jane Smith',
+          passenger_email: 'jane.smith@email.com',
+          flight_number: 'DA101',
+          destination: 'New York',
+          seat: '12B',
+          departure_time: '2025-07-18T10:00:00Z',
+          status: 'upcoming',
+          baggage_weight: null,
+          processing_history: []
+        },
+        {
+          id: 3,
+          ticket_id: 'TK001236',
+          passenger_name: 'Mike Johnson',
+          passenger_email: 'mike.johnson@email.com',
+          flight_number: 'DA205',
+          destination: 'London',
+          seat: '8C',
+          departure_time: '2025-07-18T12:30:00Z',
+          status: 'checked_in',
+          baggage_weight: 23.5,
+          processing_history: [
+            {
+              action: 'Checked-in',
+              timestamp: '2025-07-18T09:00:00Z',
+              notes: 'Baggage 23.5kg, all checks passed',
+              processed_by: 'Jane Doe'
+            }
+          ]
+        },
+        {
+          id: 4,
+          ticket_id: 'TK001237',
+          passenger_name: 'Sarah Wilson',
+          passenger_email: 'sarah.wilson@email.com',
+          flight_number: 'DA312',
+          destination: 'Paris',
+          seat: '15F',
+          departure_time: '2025-07-18T14:00:00Z',
+          status: 'upcoming',
+          baggage_weight: null,
+          processing_history: []
+        },
+        {
+          id: 5,
+          ticket_id: 'TK001238',
+          passenger_name: 'David Brown',
+          passenger_email: 'david.brown@email.com',
+          flight_number: 'DA101',
+          destination: 'New York',
+          seat: '12C',
+          departure_time: '2025-07-18T10:00:00Z',
+          status: 'boarded', // Already boarded, not for check-in manager
+          baggage_weight: 18.0,
+          processing_history: []
+        }
+      ],
       filteredTickets: [],
       selectedTicket: null,
       filters: {
-        gateNumber: '',
         flightNumber: '',
         passengerName: '',
-        status: 'checked_in' // Default filter changed to 'checked_in'
+        status: 'upcoming' // Default filter changed to 'upcoming'
       },
       processForm: {
-        gateNumber: '',
-        confirmIdentity: false,
-        confirmDocuments: false
+        baggageWeight: null,
+        allClear: false
       },
       currentPage: 1,
       itemsPerPage: 10,
       // Modal instances
       ticketDetailsModalInstance: null,
-      processPassengerModalInstance: null,
+      processCheckInModalInstance: null, // Renamed from processPassengerModalInstance
     }
   },
   computed: {
@@ -506,23 +537,16 @@ export default {
       }
       return pages;
     },
-    isSelectedTicketProcessed() {
-      return this.selectedTicket && this.selectedTicket.status === 'checked_in';
-    },
-    canProcessPassenger() {
+    canProcessCheckIn() {
       return this.selectedTicket &&
-             this.processForm.confirmIdentity &&
-             this.processForm.confirmDocuments &&
-             this.processForm.gateNumber &&
-             this.selectedTicket.status === 'checked_in';
+             this.processForm.allClear &&
+             this.processForm.baggageWeight !== null &&
+             this.processForm.baggageWeight >= 0 &&
+             this.selectedTicket.status === 'upcoming';
     }
   },
   watch: {
-    'filters.gateNumber'(newVal) {
-      if (newVal) {
-        this.filterByGate();
-      }
-    }
+    // No gateNumber filter in check-in manager
   },
   methods: {
     formatTime(dateString) {
@@ -574,23 +598,14 @@ export default {
       const classes = {
         'upcoming': 'badge bg-warning text-dark',
         'checked_in': 'badge bg-success',
-        'boarded': 'badge bg-primary', // Changed from 'boarding' to 'boarded'
+        'boarded': 'badge bg-primary',
         'cancelled': 'badge bg-danger'
       };
       return classes[status] || 'badge bg-secondary';
     },
-    filterByGate() {
-      this.applyFilters();
-      if (this.filters.gateNumber) {
-        this.processForm.gateNumber = this.filters.gateNumber;
-      }
-    },
     applyFilters() {
       this.filteredTickets = this.tickets.filter(ticket => {
         if (!ticket) return false;
-
-        const matchesGate = !this.filters.gateNumber ||
-          (ticket.gate && ticket.gate.toLowerCase().includes(this.filters.gateNumber.toLowerCase()));
 
         const matchesFlight = !this.filters.flightNumber ||
           (ticket.flight_number && ticket.flight_number.toLowerCase().includes(this.filters.flightNumber.toLowerCase()));
@@ -600,26 +615,22 @@ export default {
 
         const matchesStatus = !this.filters.status || ticket.status === this.filters.status;
 
-        return matchesGate && matchesFlight && matchesPassenger && matchesStatus;
+        return matchesFlight && matchesPassenger && matchesStatus;
       });
 
       this.currentPage = 1;
     },
-    clearGateFilter() {
-      this.filters.gateNumber = '';
-      this.applyFilters();
-    },
     clearAllFilters() {
       this.filters = {
-        gateNumber: '',
         flightNumber: '',
         passengerName: '',
-        status: ''
+        status: 'upcoming' // Reset to default 'upcoming'
       };
       this.applyFilters();
     },
     refreshTickets() {
       console.log('Refreshing tickets...');
+      // In a real app, you would re-fetch data from the server here
       this.applyFilters();
     },
     viewTicketDetails(ticket) {
@@ -630,9 +641,9 @@ export default {
 
       this.selectedTicket = ticket;
 
-      // Ensure processPassengerModal is hidden before showing ticketDetailsModal
-      if (this.processPassengerModalInstance) {
-        this.processPassengerModalInstance.hide();
+      // Ensure processCheckInModal is hidden before showing ticketDetailsModal
+      if (this.processCheckInModalInstance) {
+        this.processCheckInModalInstance.hide();
       }
       if (this.ticketDetailsModalInstance) {
         this.ticketDetailsModalInstance.show();
@@ -640,50 +651,52 @@ export default {
     },
     processPassenger(ticket) {
       // Only allow processing if the ticket status is 'upcoming'
-      if (!ticket || ticket.status !== 'checked_in') {
-        console.warn('Cannot process passenger: Ticket is not in "checked_in" status or invalid ticket provided.');
-        this.showErrorMessage('This ticket cannot be processed. Only "checked_in" tickets can be checked in.');
+      if (!ticket || ticket.status !== 'upcoming') {
+        console.warn('Cannot process passenger: Ticket is not in "upcoming" status or invalid ticket provided.');
+        this.showErrorMessage('This ticket cannot be processed. Only "upcoming" tickets can be checked in.');
         return;
       }
 
       this.selectedTicket = { ...ticket };
 
-      this.processForm.gateNumber = ticket.gate || this.filters.gateNumber || '';
-      this.processForm.confirmIdentity = false;
-      this.processForm.confirmDocuments = false;
+      // Reset form for new processing
+      this.processForm.baggageWeight = null;
+      this.processForm.allClear = false;
 
-      // Ensure ticketDetailsModal is hidden before showing processPassengerModal
+      // Ensure ticketDetailsModal is hidden before showing processCheckInModal
       if (this.ticketDetailsModalInstance) {
         this.ticketDetailsModalInstance.hide();
       }
-      if (this.processPassengerModalInstance) {
-        this.processPassengerModalInstance.show();
+      if (this.processCheckInModalInstance) {
+        this.processCheckInModalInstance.show();
       }
     },
-    async confirmProcessPassenger() {
+    async confirmProcessCheckIn() { // Renamed from confirmProcessPassenger
       if (!this.selectedTicket) {
         console.error('No selected ticket for processing');
         return;
       }
 
       // Additional check to ensure only 'upcoming' tickets are processed
-      if (this.selectedTicket.status !== 'checked_in') {
-        this.showErrorMessage('This ticket cannot be processed. Only "checked_in" tickets can be checked in.');
+      if (this.selectedTicket.status !== 'upcoming') {
+        this.showErrorMessage('This ticket cannot be processed. Only "upcoming" tickets can be checked in.');
         return;
       }
 
-      if (!this.processForm.confirmIdentity || !this.processForm.confirmDocuments || !this.processForm.gateNumber) {
-        alert('Please complete all required fields and confirmations.');
+      if (!this.processForm.allClear || this.processForm.baggageWeight === null || this.processForm.baggageWeight < 0) {
+        alert('Please complete all required fields and confirmations, and ensure baggage weight is valid.');
         return;
       }
 
       const payload = {
         id: this.selectedTicket.id,
-        gate: this.processForm.gateNumber
+        baggage_weight: this.processForm.baggageWeight,
+        all_clear: this.processForm.allClear
       };
 
       try {
-        const response = await fetch(`/api/confirm-boardingpass/`, {
+        // Assuming a new API endpoint for check-in
+        const response = await fetch(`/api/confirm-checkedin/`, {
           method: "POST",
           headers: {
             'Content-Type': 'application/json',
@@ -695,31 +708,27 @@ export default {
         if (!response.ok) {
           const errorData = await response.json();
           console.error("Server error:", errorData);
-          this.showErrorMessage("Failed to process passenger: " + (errorData.detail || "Unknown error"));
+          this.showErrorMessage("Failed to process check-in: " + (errorData.detail || "Unknown error"));
           return;
         }
 
         const updatedTicket = await response.json();
 
         // 🔄 ОНОВЛЮЄМО локальні дані (Vue state)
-        this.selectedTicket.status = 'boarded';
-        this.selectedTicket.gate = updatedTicket.gate;
+        this.selectedTicket.status = 'checked_in'; // Status changes to checked_in
+        this.selectedTicket.baggage_weight = updatedTicket.baggage_weight;
 
         // Оновити відповідний квиток у загальному списку
         const ticketIndex = this.tickets.findIndex(t => t.id === this.selectedTicket.id);
         if (ticketIndex !== -1) {
-          this.tickets[ticketIndex].status = 'boarded';
-          this.tickets[ticketIndex].gate = updatedTicket.gate;
+          this.tickets[ticketIndex].status = 'checked_in';
+          this.tickets[ticketIndex].baggage_weight = updatedTicket.baggage_weight;
         }
 
         // Оновити статистику
-        this.stats.processedTickets++;
-        if (this.stats.totalTickets > 0) {
-          this.stats.totalTickets--;
-        }
-        // Зменшити кількість очікуючих пасажирів, якщо це доречно
-        if (this.stats.waitingPassengers > 0) {
-          this.stats.waitingPassengers--;
+        this.stats.checkedInToday++;
+        if (this.stats.upcomingPassengers > 0) {
+          this.stats.upcomingPassengers--;
         }
 
         // Додати запис до історії обробки
@@ -727,25 +736,25 @@ export default {
           this.selectedTicket.processing_history = [];
         }
         this.selectedTicket.processing_history.push({
-          action: 'Checked-in through gate',
+          action: 'Checked-in',
           timestamp: new Date().toISOString(),
-          notes: 'Passenger checked-in through gate successfully',
+          notes: `Baggage ${this.processForm.baggageWeight}kg, all checks passed`,
           processed_by: this.userData.name
         });
 
         // Закрити модальне вікно
-        if (this.processPassengerModalInstance) {
-          this.processPassengerModalInstance.hide();
+        if (this.processCheckInModalInstance) {
+          this.processCheckInModalInstance.hide();
         }
 
         this.applyFilters(); // Re-apply filters to update table view
 
-        console.log(`Processed passenger ${this.selectedTicket.passenger_name} has been successfully checked in through gate ${this.processForm.gateNumber}`);
+        console.log(`Processed check-in for passenger ${this.selectedTicket.passenger_name}. Baggage: ${this.processForm.baggageWeight}kg`);
 
-        this.showSuccessMessage(`Passenger ${this.selectedTicket.passenger_name} has been successfully checked in through gate ${this.processForm.gateNumber}`);
+        this.showSuccessMessage(`Passenger ${this.selectedTicket.passenger_name} has been successfully checked in.`);
       } catch (error) {
-        console.error("Error processing passenger:", error);
-        this.showErrorMessage("An error occurred during processing. Please try again.");
+        console.error("Error processing check-in:", error);
+        this.showErrorMessage("An error occurred during check-in. Please try again.");
       }
     },
     showSuccessMessage(message) {
@@ -797,16 +806,39 @@ export default {
       return cookieValue;
     },
     goToHomePage() {
-      // This will navigate the browser back to the root of the application.
-      // If you have a Vue Router, you would use this.$router.push('/') instead.
       window.location.href = '/';
+    },
+    // Helper to calculate initial stats based on mock data
+    calculateInitialStats() {
+      const today = new Date().toISOString().split('T')[0];
+      let total = 0;
+      let checkedIn = 0;
+      let upcoming = 0;
+      let flights = new Set();
+
+      this.tickets.forEach(ticket => {
+        total++;
+        if (ticket.status === 'checked_in') {
+          checkedIn++;
+        } else if (ticket.status === 'upcoming') {
+          upcoming++;
+        }
+        if (ticket.departure_time && ticket.departure_time.startsWith(today)) {
+          flights.add(ticket.flight_number);
+        }
+      });
+
+      this.stats.totalTickets = total;
+      this.stats.checkedInToday = checkedIn;
+      this.stats.upcomingPassengers = upcoming;
+      this.stats.flightsToday = flights.size;
     }
   },
   async mounted() {
     // Initialize Bootstrap modal instances once
     if (window.bootstrap && window.bootstrap.Modal) {
       this.ticketDetailsModalInstance = new window.bootstrap.Modal(document.getElementById('ticketDetailsModal'));
-      this.processPassengerModalInstance = new window.bootstrap.Modal(document.getElementById('processPassengerModal'));
+      this.processCheckInModalInstance = new window.bootstrap.Modal(document.getElementById('processCheckInModal'));
     } else {
       console.warn('Bootstrap Modal not found. Modals may not function correctly.');
     }
@@ -822,16 +854,24 @@ export default {
         role: userData.user.role,
       };
 
-      // Assuming /api/get_upcoming_tickets/ can return all tickets,
-      // or you would need a different endpoint like /api/get_all_tickets/
-      const ticketsResponse = await fetch('/api/get_all_tickets/');
+      // Assuming an API endpoint to get all tickets relevant for check-in
+      // In a real app, this might be /api/get_tickets_for_checkin/ or similar
+      const ticketsResponse = await fetch('/api/get_all_tickets/'); // Fetch all tickets to allow filtering
       const ticketsData = await ticketsResponse.json();
       console.log("Fetched ticketsData:", ticketsData);
       this.tickets = ticketsData.tickets || [];
-      this.stats = ticketsData.stats || {};
+
+      this.calculateInitialStats(); // Calculate stats based on fetched data
       this.applyFilters(); // Apply default filter on mount
     } catch (error) {
       console.error("Error fetching data:", error);
+      // Fallback for stats if API fails
+      this.stats = {
+        totalTickets: this.tickets.length,
+        checkedInToday: this.tickets.filter(t => t.status === 'checked_in').length,
+        upcomingPassengers: this.tickets.filter(t => t.status === 'upcoming').length,
+        flightsToday: new Set(this.tickets.map(t => t.flight_number)).size
+      };
     }
   }
 }
@@ -839,7 +879,7 @@ export default {
 
 <style scoped>
 /* Base styles */
-.gate-manager-page {
+.check-in-manager-page { /* Changed class name */
   --color-primary: #6c63ff;
   --color-secondary: #ff6584;
   --color-tertiary: #43cbff;
