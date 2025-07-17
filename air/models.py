@@ -2,6 +2,7 @@ import string
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models, transaction
+from model_utils import FieldTracker
 
 from .utils import generate_unique_booking_reference, generate_booking_reference, get_random_gate
 
@@ -290,6 +291,7 @@ class Flight(models.Model):
         verbose_name="Status",
         help_text="Status of the flight",
     )
+    tracker = FieldTracker(fields=['status'])
 
     def __str__(self):
         return f"{self.flight_number}: {self.origin} → {self.destination}"
@@ -391,6 +393,7 @@ class Ticket(models.Model):
         verbose_name="Status",
         help_text="Status of the ticket",
     )
+    tracker = FieldTracker(fields=['status', 'gate'])
     
     def save(self, *args, **kwargs):
         if not self.booking_reference:

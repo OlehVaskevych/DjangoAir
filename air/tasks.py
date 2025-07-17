@@ -2,6 +2,7 @@ from celery import shared_task
 from django.utils import timezone
 
 from .models import Flight, FlightStatusChoices, Ticket, TicketStatusChoices
+from .utils import notify_user
 
 
 @shared_task
