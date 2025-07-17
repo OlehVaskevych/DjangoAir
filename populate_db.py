@@ -39,7 +39,7 @@ def populate():
     user = AirlineUser.objects.create_user(
         username='Supervisor',
         password='secretpassword',
-        email=fake.email(),
+        email='supervisor@example.com',
         role=AirlineUser.Role.SUPERVISOR,
     )
 

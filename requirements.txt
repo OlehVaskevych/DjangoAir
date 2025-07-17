@@ -19,3 +19,6 @@ sentry-sdk~=2.32.0
 whitenoise
 channels~=4.2.2
 asgiref~=3.8.1
+daphne
+django-model-utils
+channels_redis
