@@ -66,6 +66,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "DjangoAir.wsgi.application"
+ASGI_APPLICATION = "DjangoAir.asgi.application"
 
 AUTH_PASSWORD_VALIDATORS = [
     {

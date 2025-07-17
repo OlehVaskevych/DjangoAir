@@ -6,6 +6,11 @@ urlpatterns = [
     # Home page that contains form for select flight and seats
     path("", views.index, name="index"),
     path("bookings/", views.bookings, name="bookings"),
+
+    path("staff_dashboard/gate_manager/", views.gate_manager, name="gate_manager"),
+    path("staff_dashboard/checkin_manager/", views.checkin_manager, name="check_in_manager"),
+    path("staff_dashboard/supervisor/", views.supervisor, name="supervisor"),
+
     # Endpoint for creating a Stripe checkout session to process payments
     path(
         "create-checkout-session/",
@@ -19,7 +24,6 @@ urlpatterns = [
     path("auth/logout/", views.logout, name="logout"),
     path("auth/register/", views.register, name="register"),
     path("auth/services/", include("allauth.urls")),
-
 
     path("health/", views.health_check, name="health_check"),
 ]

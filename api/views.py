@@ -9,6 +9,8 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+
 from rest_framework import status, viewsets
 from rest_framework.authentication import (BasicAuthentication,
                                            TokenAuthentication, SessionAuthentication)
@@ -19,13 +21,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from air.models import (AirlineUser, Airplane, Baggage, BoardingPass, CheckIn,
-                        Comfort, Flight, Meal, Ticket, TicketStatusChoices, Seats)
+                        Comfort, Flight, Meal, Ticket, TicketStatusChoices, Seats, DietaryOption)
 
 from .serializers import (AirlineUserSerializer, AirplaneSerializer,
                           BaggageSerializer, BoardingPassSerializer,
                           CheckInSerializer, ComfortSerializer,
                           CurrentUserSerializer, FlightSerializer,
-                          MealSerializer, TicketSerializer)
+                          MealSerializer, TicketSerializer, DietaryOptionsSerializer)
 
 
 def generate_view_sets(model, model_serializer):
@@ -37,12 +39,15 @@ def generate_view_sets(model, model_serializer):
 
 
 AirlineUsersViewSet = generate_view_sets(AirlineUser, AirlineUserSerializer)
+AirplanesViewSet = generate_view_sets(Airplane, AirplaneSerializer)
+FlightsViewSet = generate_view_sets(Flight, FlightSerializer)
 MealViewSet = generate_view_sets(Meal, MealSerializer)
 BaggageViewSet = generate_view_sets(Baggage, BaggageSerializer)
 ComfortViewSet = generate_view_sets(Comfort, ComfortSerializer)
 TicketViewSet = generate_view_sets(Ticket, TicketSerializer)
 CheckInViewSet = generate_view_sets(CheckIn, CheckInSerializer)
 BoardingPassViewSet = generate_view_sets(BoardingPass, BoardingPassSerializer)
+DietaryOptionsViewSet = generate_view_sets(DietaryOption, DietaryOptionsSerializer)
 
 
 # Generates a booking reference like 'A1B2C3D4E5'
@@ -245,7 +250,6 @@ class CancelTicketAPIView(APIView):
     def post(self, request):
         try:
             data = request.data
-            print(data)
             ticket_id = data.get("ticket_id")
 
             if not ticket_id:
@@ -454,3 +458,108 @@ class SeatMapAPIView(APIView):
         seat_map = [seat_map_dict[row] for row in sorted(seat_map_dict.keys())]
 
         return Response({"seatMap": seat_map}, status=status.HTTP_200_OK)
+
+
+class GetTicketsAPIView(APIView):
+    def get(self, request):
+        tickets = Ticket.objects.select_related("flight")
+
+        # Статистика
+        total_tickets = Ticket.objects.exclude(status=TicketStatusChoices.USED).count()
+        processed_tickets = Ticket.objects.filter(status=TicketStatusChoices.BOARDED).count()
+        active_gates = Ticket.objects.exclude(status=TicketStatusChoices.CANCELED) \
+            .values("gate") \
+            .distinct() \
+            .count()
+        waiting_passengers = Ticket.objects.filter(status=TicketStatusChoices.CHECKED_IN).count()
+
+        # Квитки
+        ticket_data = []
+        for ticket in tickets:
+            flight = ticket.flight
+            ticket_data.append({
+                "id": ticket.id,
+                "ticket_id": ticket.booking_reference,
+                "passenger_name": ticket.passenger.username,
+                "passenger_email": ticket.passenger.email,
+                "passenger_phone": "+1234567890",  # Можеш замінити на ticket.passenger.phone, якщо є
+                "flight_number": flight.flight_number,
+                "destination": flight.destination,
+                "gate": str(ticket.gate),
+                "seat": ticket.seat_number,
+                "departure_time": flight.departure_time,
+                "status": ticket.status,
+                "processing_history": [],  # Заповни за потребою
+            })
+
+        # Відповідь
+        return Response({
+            "tickets": ticket_data,
+            "stats": {
+                "totalTickets": total_tickets,
+                "processedTickets": processed_tickets,
+                "activeGates": active_gates,
+                "waitingPassengers": waiting_passengers,
+            }
+        })
+
+class ConfirmBoardingAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        ticket_id = data.get('id')
+        gate = data.get('gate')
+
+        if not ticket_id:
+            return Response({"detail": "Ticket ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            ticket = Ticket.objects.get(id=ticket_id)
+        except Ticket.DoesNotExist:
+            return Response({"detail": "Ticket not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if not ticket.is_checked_in or ticket.status != TicketStatusChoices.CHECKED_IN:
+            return Response({"detail": "Ticket must be checked in before boarding"}, status=status.HTTP_400_BAD_REQUEST)
+
+        ticket.gate = gate
+        ticket.is_boarded = True
+
+        ticket.save(update_fields=["gate", "is_boarded"])
+
+        BoardingPass.objects.create(
+            ticket=ticket,
+            gate_number=str(gate),
+            boarding_time=timezone.now(),
+        )
+
+        return Response(TicketSerializer(ticket).data, status=status.HTTP_200_OK)
+
+class ConfirmCheckedInAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        ticket_id = data.get('id')
+        baggage_weight = data.get('baggage_weight')
+
+        if not ticket_id:
+            return Response({"detail": "Ticket ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            ticket = Ticket.objects.get(id=ticket_id)
+        except Ticket.DoesNotExist:
+            return Response({"detail": "Ticket not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if ticket.status != TicketStatusChoices.UPCOMING or ticket.is_checked_in == True or ticket.is_boarded == True:
+            return Response({"detail": "Ticket must be upcoming in before checked in!"}, status=status.HTTP_400_BAD_REQUEST)
+
+        ticket.is_checked_in = True
+
+        ticket.save(update_fields=["is_checked_in"])
+
+        CheckIn.objects.create(
+            ticket=ticket,
+            luggage_weight=baggage_weight,
+            created_at=timezone.now(),
+        )
+
+        return Response(TicketSerializer(ticket).data, status=status.HTTP_200_OK)
+
+

@@ -1,0 +1,14 @@
+{% extends 'master.html' %}
+
+{% block title %}Supervisor{% endblock %}
+
+{% block head %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static "main.css" %}">
+{% endblock %}
+
+{% block body %}
+    <div id="supervisor"></div>
+
+    <script src="{% static 'main.bundle.js' %}"></script>
+{% endblock %}

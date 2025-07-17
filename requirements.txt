@@ -1,5 +1,5 @@
 Django~=5.2
-stripe
+stripe~=12.3.0
 python-dateutil~=2.9.0.post0
 celery~=5.5.2
 djangorestframework~=3.16.0
@@ -17,3 +17,8 @@ gunicorn
 pytest~=8.4.1
 sentry-sdk~=2.32.0
 whitenoise
+channels~=4.2.2
+asgiref~=3.8.1
+daphne
+django-model-utils
+channels_redis

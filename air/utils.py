@@ -1,12 +1,33 @@
 import random
 import string
 import math
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 SEAT_CLASS_STRIPE_IDS = {
     "economy": "price_1RP0yYQMzydK9SUprJfIiJYw",
     "business": "price_1RP0yyQMzydK9SUpQVDc8Xlz",
     "first": "price_1RP0zFQMzydK9SUptZsV3qKC",
 }
+
+def get_staff_for_airport():
+    from air.models import AirlineUser
+
+    return AirlineUser.objects.filter(
+        role__in=['gate_manager', 'checkin_manager', 'supervisor']
+    )
+
+def notify_user(user_id, message):
+    channel_layer = get_channel_layer()
+    group_name = f"user_{user_id}"
+
+    async_to_sync(channel_layer.group_send)(
+        group_name,
+        {
+            "type": "send_notification",
+            "message": message,
+        }
+    )
 
 def find_best_seats_per_row(total_seats, max_columns):
     for i in range(min(total_seats, max_columns), 0, -1):
@@ -74,3 +95,18 @@ def generate_seats_for_flight(flight):
                 )
                 seat_count += 1
             current_row += 1
+
+def get_users_for_flight(flight):
+    from .models import Ticket
+    """
+    Повертає список користувачів, які мають квитки на вказаний рейс,
+    але ще не сіли в літак (тобто квиток не 'boarded').
+    """
+    tickets = Ticket.objects.filter(
+        flight=flight,
+    ).exclude(
+        status__iexact="boarded"
+    ).select_related("passenger")
+
+    users = [ticket.passenger for ticket in tickets]
+    return users

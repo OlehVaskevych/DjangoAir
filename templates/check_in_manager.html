@@ -1,0 +1,14 @@
+{% extends 'master.html' %}
+
+{% block title %}CheckIn Manager{% endblock %}
+
+{% block head %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static "main.css" %}">
+{% endblock %}
+
+{% block body %}
+    <div id="check-in-manager"></div>
+
+    <script src="{% static 'main.bundle.js' %}"></script>
+{% endblock %}

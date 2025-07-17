@@ -9,5 +9,6 @@ python manage.py migrate
 python manage.py clear_db
 python manage.py populate_db
 
-echo "🚀 Запускаємо Gunicorn..."
-gunicorn DjangoAir.wsgi:application --bind 0.0.0.0:8000
+echo "🚀 Запускаємо Daphne..."
+daphne -b 0.0.0.0 -p 8000 DjangoAir.asgi:application
+
