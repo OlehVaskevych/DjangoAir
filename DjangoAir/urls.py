@@ -25,7 +25,7 @@ from rest_framework_simplejwt.views import (TokenObtainPairView,
                                             TokenRefreshView)
 
 urlpatterns = [
-    path("staff_dashboard/", admin.site.urls),
+    # path("staff_dashboard/", admin.site.urls),
     path("api/", include("api.urls")),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
