@@ -21,13 +21,21 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from air.models import (AirlineUser, Airplane, Baggage, BoardingPass, CheckIn,
-                        Comfort, Flight, Meal, Ticket, TicketStatusChoices, Seats, DietaryOption)
+                        Comfort, Flight, Meal, Ticket, TicketStatusChoices, Seats,
+                        DietaryOption, SeatClassChoices)
 
 from .serializers import (AirlineUserSerializer, AirplaneSerializer,
                           BaggageSerializer, BoardingPassSerializer,
                           CheckInSerializer, ComfortSerializer,
                           CurrentUserSerializer, FlightSerializer,
-                          MealSerializer, TicketSerializer, DietaryOptionsSerializer)
+                          MealSerializer, TicketSerializer,
+                          DietaryOptionsSerializer)
+
+SEAT_CLASS_MAP = {
+    "E": SeatClassChoices.ECONOMY,
+    "B": SeatClassChoices.BUSINESS,
+    "F": SeatClassChoices.FIRST,
+}
 
 
 def generate_view_sets(model, model_serializer):
@@ -355,9 +363,9 @@ class StripeWebhookView(APIView):
                                       ComfortSerializer, MealSerializer,
                                       TicketSerializer)
 
-            meal_ids = [m["id"] for m in services.get("meals", [])]
-            baggage_ids = [b["id"] for b in services.get("baggage", [])]
-            comfort_ids = [c["id"] for c in services.get("comfort", [])]
+            meal_ids = services.get("meals", [])
+            baggage_ids = services.get("baggage", [])
+            comfort_ids = services.get("comfort", [])
 
             meal_objs = Meal.objects.filter(id__in=meal_ids)
             baggage_objs = Baggage.objects.filter(id__in=baggage_ids)
@@ -373,12 +381,23 @@ class StripeWebhookView(APIView):
                 )
 
             for seat in seats:
+                seat_number = seat[0]
+                seat_price = seat[1]
+                seat_class_short = seat[2].upper()
+
+                seat_class_full = SEAT_CLASS_MAP.get(seat_class_short)
+                if not seat_class_full:
+                    return Response(
+                        {"error": f"Invalid seat class: {seat_class_short} for seat {seat_number}"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
                 ticket = Ticket.objects.create(
-                    seat_number=seat["seatNumber"],
-                    price=seat["price"],
+                    seat_number=seat_number,
+                    price=seat_price,
                     flight_id=metadata["flight_id"],
                     passenger_id=user.id,
-                    seat_class=seat["class"],
+                    seat_class=seat_class_full,
                     booking_reference=generate_booking_reference(),
                     gate=gate,
                 )
