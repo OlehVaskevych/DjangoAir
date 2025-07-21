@@ -323,6 +323,10 @@ def create_checkout_session(request):
         selected_seats = data.get("selectedSeats", [])
         selected_services = data.get("selectedServices", {})
 
+        # Підрахунок місць
+        seat_counter = defaultdict(int)
+        seat_count = len(selected_seats)
+
         line_items = []
 
         for seat in selected_seats:
@@ -337,29 +341,39 @@ def create_checkout_session(request):
             if db_seat.stripe_price_id != price_id:
                 return JsonResponse({"error": f"Invalid priceId for seat {seat_number}"}, status=400)
 
+            seat_counter[price_id] += 1
+
+        for price_id, quantity in seat_counter.items():
             line_items.append({
-                "price": db_seat.stripe_price_id,
-                "quantity": 1
+                "price": price_id,
+                "quantity": quantity,
             })
 
-        def validate_service(model, service_name):
+        # Валідація та додавання додаткових послуг
+        def validate_service(model, service_name, seat_count):
             for service in selected_services.get(service_name, []):
-                price_id = service.get("priceId")
+                service_id = service.get("id")
                 try:
-                    model.objects.get(stripe_price_id=price_id)
+                    obj = model.objects.get(id=service_id)
                 except model.DoesNotExist:
-                    return JsonResponse({"error": f"Invalid {service_name} priceId: {price_id}"}, status=400)
+                    return JsonResponse({"error": f"Invalid {service_name} ID: {service_id}"}, status=400)
 
                 line_items.append({
-                    "price": price_id,
-                    "quantity": 1
+                    "price": obj.stripe_price_id,
+                    "quantity": seat_count
                 })
             return None
 
         for model, key in [(Meal, "meals"), (Baggage, "baggage"), (Comfort, "comfort")]:
-            response = validate_service(model, key)
+            response = validate_service(model, key, seat_count)
             if response:
                 return response
+
+        # 🧠 Стиснене представлення services у metadata:
+        compressed_services = {
+            key: [service.get("id") for service in selected_services.get(key, [])]
+            for key in ["meals", "baggage", "comfort"]
+        }
 
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
@@ -369,8 +383,11 @@ def create_checkout_session(request):
             metadata={
                 "user_id": user.id,
                 "flight_id": flight_id,
-                "seats": json.dumps(selected_seats),
-                "services": json.dumps(selected_services),
+                "seats": json.dumps([
+                    [seat["seatNumber"], seat["price"], seat["class"][0].upper()]
+                    for seat in selected_seats
+                ]),
+                "services": json.dumps(compressed_services),
             },
             success_url="https://djangoair-production.up.railway.app/bookings/",
             cancel_url="hhttps://djangoair-production.up.railway.app/",
